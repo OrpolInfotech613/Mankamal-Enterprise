@@ -21,7 +21,7 @@ License: You must have a valid license purchased only from themeforest(the above
         content="admin template, Enigma Admin Template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="LEFT4CODE">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Sweetler</title>
+    <title>Mankamal Enterprise</title>
     <!-- BEGIN: CSS Assets-->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
     <!-- DataTables CSS -->
@@ -60,7 +60,7 @@ License: You must have a valid license purchased only from themeforest(the above
     <div class="mobile-menu md:hidden">
         <div class="mobile-menu-bar">
             <a href="{{ route('dashboard') }}" class="flex mr-auto">
-                <img alt="Sweetler" class="h-6" src="{{ asset('images/logo.png') }}">
+                <img alt="Mankamal Enterprise" class="h-6" src="{{ asset('images/logo.png') }}">
             </a>
             <a href="javascript:;" class="mobile-menu-toggler"> <i data-lucide="bar-chart-2"
                     class="w-8 h-8 text-white transform -rotate-90"></i> </a>
