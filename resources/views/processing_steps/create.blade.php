@@ -6,7 +6,7 @@
 
     <div class="grid grid-cols-12 gap-6 mt-5">
         <div class="intro-y col-span-12">
-            <form action="{{ route('processing_steps.store') }}" method="POST">
+            <form action="{{ route('processing-steps.store') }}" method="POST">
                 @csrf
                 <div class="form-group mb-3">
                     <label for="department_id">Select Department</label>
@@ -24,7 +24,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary">Save Step</button>
-                <a href="{{ route('processing_steps.index') }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ route('processing-steps.index') }}" class="btn btn-secondary">Cancel</a>
             </form>
         </div>
     </div>

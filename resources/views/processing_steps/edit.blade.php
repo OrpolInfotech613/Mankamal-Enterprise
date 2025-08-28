@@ -6,7 +6,7 @@
 
     <div class="grid grid-cols-12 gap-6 mt-5">
         <div class="intro-y col-span-12">
-            <form action="{{ route('processing_steps.update', $processing_step->id) }}" method="POST">
+            <form action="{{ route('processing-steps.update', $processing_step->id) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -28,7 +28,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary">Update Step</button>
-                <a href="{{ route('processing_steps.index') }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ route('processing-steps.index') }}" class="btn btn-secondary">Cancel</a>
             </form>
         </div>
     </div>

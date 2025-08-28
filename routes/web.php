@@ -13,9 +13,9 @@ Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
- Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::resource('roles', RoleController::class);
 Route::resource('departments', DepartmentController::class);
 Route::resource('users', UserController::class);
-Route::resource('processing_steps', ProcessingStepController::class);
+Route::resource('processing-steps', ProcessingStepController::class);
 
