@@ -53,62 +53,6 @@ class AuthController extends Controller
             return redirect()->route('dashboard')->with('success', 'Welcome back, ' . $user->name . '!');
         }
 
-        // $branches = Branch::all();
-
-        // foreach ($branches as $branch) {
-        //     try {
-        //         $branchUser = BranchUsers::forDatabase($branch->getDatabaseName())
-        //             ->where('email', $email)
-        //             ->where('is_active', true)
-        //             ->first();
-
-        //         if ($branchUser) {
-        //             if (Hash::check($password, $branchUser->password)) {
-        //                 // if ($branchUser && password_verify($password, $branchUser->password)) {
-        //                 // Get role info
-        //                 $role = Role::forDatabase($branch->getDatabaseName())->find($branchUser->role_id);
-
-        //                 // Handle remember me for branch users
-        //                 if ($remember) {
-        //                     $rememberToken = Str::random(60);
-        //                     $branchUser->update([
-        //                         'remember_token' => hash('sha256', data: $rememberToken),
-        //                         'last_login_at' => now()
-        //                     ]);
-
-        //                     // Set remember me cookie for branch user
-        //                     Cookie::queue('branch_remember_token', $rememberToken, 43200); // 30 days
-        //                     Cookie::queue('branch_user_id', $branchUser->id, 43200);
-        //                     Cookie::queue('branch_connection', $branch->connection_name, 43200);
-        //                 } else {
-        //                     // Update last login
-        //                     $branchUser->update(['last_login_at' => now()]);
-        //                 }
-        //                 // Store branch user info in session
-        //                 session([
-        //                     'user_type' => 'branch',
-        //                     'branch_user_id' => $branchUser->id,
-        //                     'branch_id' => $branch->id,
-        //                     'branch_name' => $branch->name,
-        //                     'branch_connection' => $branch->connection_name,
-        //                     'user_role' => $role ? $role->role_name : null,
-        //                     'user_name' => $branchUser->name,
-        //                     'user_email' => $branchUser->email,
-        //                 ]);
-
-        //                 return redirect()->route('dashboard')->with('success', 'Welcome back, ' . $branchUser->name . '!');
-
-        //             } else {
-        //                 dd('password incorrect');
-        //             }
-        //         }
-        //     } catch (Exception $e) {
-        //         dd($e->getMessage());
-        //         \Log::warning("Login attempt failed for branch {$branch->name}: " . $e->getMessage());
-        //         continue;
-        //     }
-        // }
-
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->withInput($request->only('email', 'remember'));

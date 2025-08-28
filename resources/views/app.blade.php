@@ -767,7 +767,7 @@ License: You must have a valid license purchased only from themeforest(the above
         <div class="h-full flex items-center">
             <!-- BEGIN: Logo -->
             <a href="{{ route('dashboard') }}" class="logo -intro-x hidden md:flex xl:w-[180px] block">
-                <img alt="Midone - HTML Admin Template" class="logo__image w-20"
+                <img alt="Midone - HTML Admin Template" class="logo__image w-50"
                     src="{{ asset('images/logo.png') }}">
             </a>
             <!-- END: Logo -->
@@ -1032,7 +1032,7 @@ License: You must have a valid license purchased only from themeforest(the above
         <nav class="side-nav">
             <ul>
                 <li>
-                    <a href="javascript:;.html" class="side-menu side-menu--active">
+                    <a href="javascript:;" class="side-menu side-menu--active">
                         <div class="side-menu__icon"> <i data-lucide="home"></i> </div>
                         <div class="side-menu__title">
                             Dashboard
@@ -1063,6 +1063,37 @@ License: You must have a valid license purchased only from themeforest(the above
                             <a href="#" class="side-menu">
                                 <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
                                 <div class="side-menu__title"> Overview 4 </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @php
+                    $userMenuOpen = request()->routeIs('users.*') || request()->routeIs('roles.*');
+                @endphp
+                <li>
+                    <a href="javascript:;"
+                        class="side-menu {{ $userMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
+                        <div class="side-menu__icon"> <i data-lucide="user"></i> </div>
+                        <div class="side-menu__title">
+                            User Management
+                            <i data-lucide="chevron-down"
+                                class="side-menu__sub-icon {{ $userMenuOpen ? 'transform rotate-180' : '' }}"></i>
+                        </div>
+                    </a>
+
+                    <ul class="{{ $userMenuOpen ? 'side-menu__sub-open' : 'hidden' }}">
+                        <li>
+                            <a href="{{ route('users.index') }}"
+                                class="side-menu {{ request()->routeIs('users.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="users"></i> </div>
+                                <div class="side-menu__title"> Users </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('roles.index') }}"
+                                class="side-menu {{ request()->routeIs('roles.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__title"> Role </div>
                             </a>
                         </li>
                     </ul>

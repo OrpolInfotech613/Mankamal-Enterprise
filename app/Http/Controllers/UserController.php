@@ -20,7 +20,7 @@ class UserController extends Controller
     public function index()
     {
 
-        $users = User::with(['role_data', 'branch'])->get();
+        $users = User::with(['role_data'])->get();
     
         return view('users.index', compact('users'));
     }
@@ -74,9 +74,8 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::where('role_name', '!=', 'Super Admin')->get();
-        $branches = Branch::all();
 
-        return view('users.create', compact('roles', 'branches'));
+        return view('users.create', compact('roles'));
     }
 
     /**

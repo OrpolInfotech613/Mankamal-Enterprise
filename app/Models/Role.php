@@ -9,6 +9,7 @@ class Role extends Model
 {
     use HasDynamicTable; 
     protected $fillable = [
+        'id',
         'role_name',
     ];
 
