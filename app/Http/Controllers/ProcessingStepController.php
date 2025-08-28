@@ -38,7 +38,7 @@ class ProcessingStepController extends Controller
 
         ProcessingStep::create($request->all());
 
-        return redirect()->route('processing_steps.index')
+        return redirect()->route('processing-steps.index')
                          ->with('success', 'Processing step created successfully.');
     }
 
@@ -63,7 +63,7 @@ class ProcessingStepController extends Controller
 
         $processing_step->update($request->all());
 
-        return redirect()->route('processing_steps.index')
+        return redirect()->route('processing-steps.index')
                          ->with('success', 'Processing step updated successfully.');
     }
 
@@ -74,7 +74,7 @@ class ProcessingStepController extends Controller
     {
         $processing_step->delete();
 
-        return redirect()->route('processing_steps.index')
+        return redirect()->route('processing-steps.index')
                          ->with('success', 'Processing step deleted successfully.');
     }
 }
