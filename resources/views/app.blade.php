@@ -1068,7 +1068,7 @@ License: You must have a valid license purchased only from themeforest(the above
                     </ul>
                 </li>
                 @php
-                    $userMenuOpen = request()->routeIs('users.*') || request()->routeIs('roles.*');
+                    $userMenuOpen = request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('departments.*');
                 @endphp
                 <li>
                     <a href="javascript:;"
@@ -1094,6 +1094,13 @@ License: You must have a valid license purchased only from themeforest(the above
                                 class="side-menu {{ request()->routeIs('roles.*') ? 'side-menu--active' : '' }}">
                                 <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
                                 <div class="side-menu__title"> Role </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('departments.index') }}"
+                                class="side-menu {{ request()->routeIs('departments.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__title"> Departments </div>
                             </a>
                         </li>
                     </ul>
