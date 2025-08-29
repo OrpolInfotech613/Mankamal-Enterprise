@@ -7,21 +7,21 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ProcessingStepController;
-use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Api\APIOrderController;
 
 
 Route::prefix('orders')->group(function () {
-    Route::get('/', [OrderController::class, 'index']);
-    Route::post('/', [OrderController::class, 'store']);
-    Route::get('/{id}', [OrderController::class, 'show']);
-    Route::put('/{id}', [OrderController::class, 'update']);
-    Route::patch('/{id}', [OrderController::class, 'update']);
-    Route::delete('/{id}', [OrderController::class, 'destroy']);
-    Route::patch('/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::get('/', [APIOrderController::class, 'index']);
+    Route::post('/', [APIOrderController::class, 'store']);
+    Route::get('/{id}', [APIOrderController::class, 'show']);
+    Route::put('/{id}', [APIOrderController::class, 'update']);
+    Route::patch('/{id}', [APIOrderController::class, 'update']);
+    Route::delete('/{id}', [APIOrderController::class, 'destroy']);
+    Route::patch('/{id}/status', [APIOrderController::class, 'updateStatus']);
     
     Route::prefix('reports')->group(function () {
-        Route::get('/status/{status}', [OrderController::class, 'index']);
-        Route::get('/dealer/{dealerName}', [OrderController::class, 'index']);
+        Route::get('/status/{status}', [APIOrderController::class, 'index']);
+        Route::get('/dealer/{dealerName}', [APIOrderController::class, 'index']);
     });
 });
     
