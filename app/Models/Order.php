@@ -1,5 +1,5 @@
 <?php
-// app/Models/MigrationOrder.php
+// app/Models/Order.php
 
 namespace App\Models;
 
@@ -33,5 +33,13 @@ class Order extends Model
         'updated_at' => 'datetime',
         'production_step' => 'array',
     ];
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'id');
+    }
 
+    public function Orderstep()
+    {
+        return $this->hasMany(OrderStep::class, 'o_id', 'id');
+    }
 }
