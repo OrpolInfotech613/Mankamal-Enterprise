@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [APIOrderController::class, 'update']);
         Route::patch('/{id}', [APIOrderController::class, 'update']);
         Route::delete('/{id}', [APIOrderController::class, 'destroy']);
-        Route::patch('/{id}/status', [APIOrderController::class, 'updateStatus']);
+        Route::post('/{id}/status', [APIOrderController::class, 'updateStatus']);
         
         Route::prefix('reports')->group(function () {
             Route::get('/status/{status}', [APIOrderController::class, 'index']);

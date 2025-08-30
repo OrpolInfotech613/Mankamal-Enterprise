@@ -25,10 +25,6 @@ class Department extends Model
      */
     protected $fillable = [
         'name',
-        // Add other fields if you have them:
-        // 'department_code',
-        // 'description',
-        // 'manager_id',
     ];
 
     /**
@@ -38,8 +34,7 @@ class Department extends Model
      */
     protected $casts = [
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        // 'deleted_at' => 'datetime', // Uncomment if using soft deletes
+        'updated_at' => 'datetime',       
     ];
 
    
