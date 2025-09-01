@@ -54,8 +54,11 @@ class OrderController extends Controller
     }
     public function create()
     {
-        $departments = Department::all();
-        return view('orders.create', compact('departments'));
+        $steps = ProcessingStep::with('department')
+        ->orderBy('step_order')
+        ->get()
+        ->groupBy('step_order');
+        return view('orders.create', compact('steps'));
     }
 
 
@@ -288,6 +291,7 @@ class OrderController extends Controller
                     'date' => now()
                 ]);
             }
+            $order->update(['status' => $request->status]);
 
             DB::commit();
 

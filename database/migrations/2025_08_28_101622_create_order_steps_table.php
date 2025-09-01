@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('o_id')->constrained('orders')->onDelete('cascade')->comment('Order ID');
             $table->foreignId('d_id')->constrained('dealers')->onDelete('cascade')->comment('Dealer ID');
             $table->integer('step_order')->default(1)->comment('Step sequence number');
-            $table->enum('status', ['pending', 'completed', 'progress'])->default('pending');
+            $table->enum('status', ['pending', 'completed', 'progress','rejected'])->default('pending');
             $table->text('note')->nullable();
             $table->timestamps();
 

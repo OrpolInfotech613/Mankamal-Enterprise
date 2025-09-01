@@ -22,8 +22,8 @@ class APIOrderController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // $user = Auth::user();
-        $user= User::findOrFail(2);
+        $user = Auth::user();
+        // $user = User::findOrFail(2);
         $query = Order::query();
 
         // Apply filters
@@ -77,7 +77,7 @@ class APIOrderController extends Controller
 
         if (isset($data['production_step']) && is_string($data['production_step'])) {
             $data['production_step'] = json_decode($data['production_step'], true);
-
+            $data['status'] = 'pending';
         }
         $validator = Validator::make($data, [
             'dealer_name' => 'required|string|max:255',
@@ -88,8 +88,7 @@ class APIOrderController extends Controller
             'quantity' => 'required|integer|min:1',
             'shade_number' => 'nullable|string|max:50',
             'color' => 'nullable|string|max:100',
-            'delivery_time' => 'nullable|date',
-            'status' => 'nullable|in:pending,completed,progress',
+            'delivery_time' => 'nullable|date|after_or_equal:today',
         ]);
 
         if ($validator->fails()) {
@@ -127,7 +126,7 @@ class APIOrderController extends Controller
      * Display the specified resource.
      */
     public function show(string $id): JsonResponse
-    {   
+    {
         $order = Order::find($id);
 
         if (!$order) {
@@ -207,8 +206,8 @@ class APIOrderController extends Controller
      */
     public function updateStatus(Request $request, string $id): JsonResponse
     {
-        // $user = Auth::user(); // use this in real app
-        $user = User::findOrFail(7); // TEMP for testing
+        $user = Auth::user(); // use this in real app
+        // $user = User::findOrFail($request->u_id); // TEMP for testing
 
         return DB::transaction(function () use ($request, $id, $user) {
             $order = Order::findOrFail($id);
@@ -227,7 +226,10 @@ class APIOrderController extends Controller
                 'inprogress' => OrderStep::STATUS_PROGRESS,
                 'progress' => OrderStep::STATUS_PROGRESS,
                 'pending' => OrderStep::STATUS_PENDING,
+                'reject' => OrderStep::STATUS_REJECTED,
+                'rejected' => OrderStep::STATUS_REJECTED,
             ];
+
             if (isset($map[$statusNorm])) {
                 $statusNorm = $map[$statusNorm];
             }
@@ -240,7 +242,8 @@ class APIOrderController extends Controller
                         Rule::in([
                             OrderStep::STATUS_PENDING,
                             OrderStep::STATUS_COMPLETED,
-                            OrderStep::STATUS_PROGRESS
+                            OrderStep::STATUS_PROGRESS,
+                            OrderStep::STATUS_REJECTED
                         ])
                     ]
                 ]
@@ -253,46 +256,36 @@ class APIOrderController extends Controller
                 ], 422);
             }
 
-            // --- 2) Find current step for this department ---
             $orderStep = OrderStep::where('o_id', $id)
                 ->where('d_id', $user->d_id)
                 ->first();
-
             if (!$orderStep) {
                 return response()->json([
                     'message' => 'No step found for this department on the given order.'
                 ], 404);
             }
-
-            // --- 3) Update current step ---
+            $order->update(['status' => $request->status]);
             $orderStep->update([
-                'status' => $statusNorm,
+                'status' => $statusNorm === 'rejected' ? OrderStep::STATUS_COMPLETED : $statusNorm,
                 'note' => $request->input('note'),
                 'date' => now()->toDateString(),
             ]);
 
-            // --- 4) If completed, move to next department in the flow ---
             if ($statusNorm === OrderStep::STATUS_COMPLETED) {
-                // production_step casted to array in Order model; make sure types align
-                $flow = array_map('intval', (array) $order->production_step);
-                $currentDept = (int) $user->d_id;
+                $this->moveToNextDepartment($order, $user->d_id);
 
-                $currentIndex = array_search($currentDept, $flow, true);
-
-                if ($currentIndex !== false && isset($flow[$currentIndex + 1])) {
-                    $nextDeptId = (int) $flow[$currentIndex + 1];
-
-                    OrderStep::where('o_id', $id)
-                        ->where('d_id', $nextDeptId)
-                        ->update(['status' => OrderStep::STATUS_PROGRESS]);
-
-                    $order->update(['status' => OrderStep::STATUS_PROGRESS]);
+            } elseif ($statusNorm === 'rejected') {
+                // $this->handleRejection($order, $user->d_id);
+                $targetDeptId = $request->input('d_id');
+                if ($targetDeptId) {
+                    // Move to specific department for rework
+                    $this->handleRejectionToDepartment($order, $user->d_id, (int) $targetDeptId);
                 } else {
-                    // No next step -> whole order completed
-                    $order->update(['status' => OrderStep::STATUS_COMPLETED]);
+                    // Default behavior: move to previous department
+                    $this->handleRejectionToPrevious($order, $user->d_id);
                 }
+
             } elseif ($statusNorm === OrderStep::STATUS_PROGRESS) {
-                // When a dept starts working, order should at least be progress
                 if ($order->status !== OrderStep::STATUS_COMPLETED) {
                     $order->update(['status' => OrderStep::STATUS_PROGRESS]);
                 }
@@ -307,6 +300,99 @@ class APIOrderController extends Controller
         });
     }
 
+    /**
+     * Move to next department in the flow
+     */
+    private function moveToNextDepartment(Order $order, int $currentDeptId): void
+    {
+        $flow = array_map('intval', (array) $order->production_step);
+        $currentIndex = array_search($currentDeptId, $flow, true);
+
+        if ($currentIndex !== false && isset($flow[$currentIndex + 1])) {
+            $nextDeptId = (int) $flow[$currentIndex + 1];
+
+            OrderStep::where('o_id', $order->id)
+                ->where('d_id', $nextDeptId)
+                ->update(['status' => OrderStep::STATUS_PROGRESS]);
+
+            $order->update(['status' => OrderStep::STATUS_PROGRESS]);
+        } else {
+            // No next step -> whole order completed
+            $order->update(['status' => OrderStep::STATUS_COMPLETED]);
+        }
+    }
+
+    /**
+     * Handle rejection - move back to previous department (TFO)
+     */
+    private function handleRejectionToDepartment(Order $order, int $rejectingDeptId, int $targetDeptId): void
+    {
+        $flow = array_map('intval', (array) $order->production_step);
+
+        // Check if target department exists in the flow
+        $targetIndex = array_search($targetDeptId, $flow, true);
+        $rejectingIndex = array_search($rejectingDeptId, $flow, true);
+
+        if ($targetIndex !== false && $targetIndex <= $rejectingIndex) {
+            // Reset target department status to progress for rework
+            OrderStep::where('o_id', $order->id)
+                ->where('d_id', $targetDeptId)
+                ->update([
+                    'status' => OrderStep::STATUS_PROGRESS,
+                    'note' => 'Sent back for rework after rejection'
+                ]);
+
+            // Set all departments after the target (including rejecting one) to pending
+            for ($i = $targetIndex + 1; $i < count($flow); $i++) {
+                OrderStep::where('o_id', $order->id)
+                    ->where('d_id', $flow[$i])
+                    ->update(['status' => OrderStep::STATUS_PENDING]);
+            }
+
+            // Update order status to indicate it's back for rework
+            $order->update(['status' => 'rework']);
+
+        } else {
+            // If target department is invalid, fall back to previous department
+            $this->handleRejectionToPrevious($order, $rejectingDeptId);
+        }
+    }
+
+    /**
+     * Handle rejection - move back to previous department for rework
+     */
+    private function handleRejectionToPrevious(Order $order, int $rejectingDeptId): void
+    {
+        $flow = array_map('intval', (array) $order->production_step);
+        $currentIndex = array_search($rejectingDeptId, $flow, true);
+
+        if ($currentIndex !== false && $currentIndex > 0) {
+            // Find the previous department in the flow
+            $previousDeptId = $flow[$currentIndex - 1];
+
+            // Reset previous department status to progress for rework
+            OrderStep::where('o_id', $order->id)
+                ->where('d_id', $previousDeptId)
+                ->update([
+                    'status' => OrderStep::STATUS_PROGRESS,
+                    'note' => 'Sent back for rework after rejection'
+                ]);
+
+            // Set the rejecting department and all subsequent departments to pending
+            for ($i = $currentIndex; $i < count($flow); $i++) {
+                OrderStep::where('o_id', $order->id)
+                    ->where('d_id', $flow[$i])
+                    ->update(['status' => OrderStep::STATUS_PENDING]);
+            }
+
+            // Update order status to indicate it's back for rework
+            $order->update(['status' => 'rework']);
+
+        } else {
+            // If the first department rejects, mark as completed (can't go back further)
+            $order->update(['status' => OrderStep::STATUS_COMPLETED]);
+        }
+    }
     public function getProcessingSteps(Request $request): JsonResponse
     {
 
