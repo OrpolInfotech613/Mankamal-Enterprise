@@ -30,7 +30,7 @@ class OrderStep extends Model
     const STATUS_PENDING = 'pending';
     const STATUS_COMPLETED = 'completed';
     const STATUS_PROGRESS = 'progress';
-
+    const STATUS_REJECTED = 'rejected'; 
     /**
      * Get the order that owns the step
      */
@@ -77,5 +77,31 @@ class OrderStep extends Model
     public function isInProgress(): bool
     {
         return $this->status === self::STATUS_PROGRESS;
+    }
+     /**
+     * Check if step is rejected
+     */
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
+    }
+    /**
+     * Check if step is pending
+     */
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+    /**
+     * Get all available status options
+     */
+    public static function getStatusOptions(): array
+    {
+        return [
+            self::STATUS_PENDING,
+            self::STATUS_PROGRESS,
+            self::STATUS_COMPLETED,
+            self::STATUS_REJECTED
+        ];
     }
 }

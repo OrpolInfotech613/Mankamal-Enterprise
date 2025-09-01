@@ -94,6 +94,7 @@
                                     <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="progress" {{ $order->status == 'progress' ? 'selected' : '' }}>Progress</option>
                                     <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                                    <option value="rework" {{ $order->status == 'rework' ? 'selected' : '' }}>Rework</option>
                                 </select>
                             </td>
                             <td>

@@ -30,13 +30,30 @@
             <div class="col-span-12 md:col-span-6">
                 <label for="production_step" class="block text-sm font-medium text-gray-700 mb-1">Production Step</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @foreach ($departments as $department)
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" name="production_step[]" value="{{ $department->id }}"
-                                class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
-                            <span>{{ $department->name }}</span>
-                        </label>
+                    @foreach ($steps as $stepOrder => $processingSteps)
+                        <div class="mb-4">
+                            @if ($processingSteps->count() > 1)
+                                {{-- Multiple departments in same step_order → Radio buttons --}}
+                                 @foreach ($processingSteps as $step)
+                                    <label class="flex items-center space-x-2">
+                                        <input type="radio" 
+                                            name="production_step[]" 
+                                            value="{{ $step->department->id }}"
+                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2">
+                                        <span>{{ $step->department->name ?? 'Unknown Department' }}</span>
+                                    </label>
+                                @endforeach
+                            @else
+                                @php $step = $processingSteps->first(); @endphp
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="production_step[]" value="{{ $step->department->id }}"
+                                        class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2">
+                                    <span>{{ $step->department->name ?? 'Unknown Department' }}</span>
+                                </label>
+                            @endif
+                        </div>
                     @endforeach
+
                 </div>
 
             </div>
@@ -67,7 +84,6 @@
                 <div class="flex items-center">
                     <input type="text" id="color" name="color" placeholder="Color"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <input type="color" id="color_picker" class="ml-2 h-10 w-10 cursor-pointer">
                 </div>
             </div>
 
@@ -80,8 +96,7 @@
 
             <!-- Form Actions -->
             <div class="col-span-12 flex justify-between pt-6 border-t">
-                <button type="submit"
-                    class="px-6 py-2 bg-blue-600 text-dark rounded-lg hover:bg-blue-700 transition duration-200 flex items-center">
+                <button type="submit" class="btn btn-primary shadow-md mr-2 btn-hover">
                     <i class="fas fa-save mr-2"></i> Save Order
                 </button>
             </div>
