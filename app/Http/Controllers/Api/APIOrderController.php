@@ -20,7 +20,7 @@ class APIOrderController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // $user= Auth::user();
+        // $user = Auth::user();
         $user= User::findOrFail(2);
         $query = Order::query();
 
@@ -125,7 +125,7 @@ class APIOrderController extends Controller
      * Display the specified resource.
      */
     public function show(string $id): JsonResponse
-    {
+    {   
         $order = Order::find($id);
 
         if (!$order) {
@@ -239,6 +239,17 @@ class APIOrderController extends Controller
         return response()->json([
             'message' => 'Order status updated successfully',
             'data' => $order
+        ]);
+    }
+
+    public function getProcessingSteps(Request $request): JsonResponse
+    {
+
+        $user = Auth::user();
+        $steps = ProcessingStep::with('department')->orderBy('step_order')->get();
+
+        return response()->json([
+            'data' => $steps
         ]);
     }
 }

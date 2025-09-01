@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/dealer/{dealerName}', [APIOrderController::class, 'index']);
         });
     });
+    Route::get('/get-processing-steps', [APIOrderController::class, 'getProcessingSteps']);
 });
 
 // Health check route (public)

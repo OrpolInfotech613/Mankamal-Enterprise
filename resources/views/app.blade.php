@@ -1110,6 +1110,30 @@ License: You must have a valid license purchased only from themeforest(the above
                         </li>
                     </ul>
                 </li>
+                @php
+                    $orderMenuOpen = request()->routeIs('orders.*');
+                @endphp
+                <li>
+                    <a href="javascript:;"
+                        class="side-menu {{ $orderMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
+                        <div class="side-menu__icon"> <i data-lucide="user"></i> </div>
+                        <div class="side-menu__title">
+                            Orders
+                            <i data-lucide="chevron-down"
+                                class="side-menu__sub-icon {{ $orderMenuOpen ? 'transform rotate-180' : '' }}"></i>
+                        </div>
+                    </a>
+
+                    <ul class="{{ $orderMenuOpen ? 'side-menu__sub-open' : 'hidden' }}">
+                        <li>
+                            <a href="{{ route('orders.index') }}"
+                                class="side-menu {{ request()->routeIs('orders.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="orders"></i> </div>
+                                <div class="side-menu__title"> Orders </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
         <!-- END: Side Menu -->
