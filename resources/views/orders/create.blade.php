@@ -4,6 +4,17 @@
         <h2 class="intro-y text-lg font-medium mt-10 heading">
             Order Create
         </h2>
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Validation failed!</strong>
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form id="orderForm" class="grid grid-cols-12 gap-4" action="{{ route('orders.store') }}" method="post">
             @csrf
             <div class="col-span-12 md:col-span-6">
@@ -29,16 +40,14 @@
 
             <div class="col-span-12 md:col-span-6">
                 <label for="production_step" class="block text-sm font-medium text-gray-700 mb-1">Production Step</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col md:flex-row gap-4">
                     @foreach ($steps as $stepOrder => $processingSteps)
                         <div class="mb-4">
                             @if ($processingSteps->count() > 1)
                                 {{-- Multiple departments in same step_order → Radio buttons --}}
-                                 @foreach ($processingSteps as $step)
+                                @foreach ($processingSteps as $step)
                                     <label class="flex items-center space-x-2">
-                                        <input type="radio" 
-                                            name="production_step[]" 
-                                            value="{{ $step->department->id }}"
+                                        <input type="radio" name="production_step[]" value="{{ $step->department->id }}"
                                             class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2">
                                         <span>{{ $step->department->name ?? 'Unknown Department' }}</span>
                                     </label>
@@ -47,7 +56,7 @@
                                 @php $step = $processingSteps->first(); @endphp
                                 <label class="flex items-center space-x-2">
                                     <input type="checkbox" name="production_step[]" value="{{ $step->department->id }}"
-                                        class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2">
+                                        class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-1">
                                     <span>{{ $step->department->name ?? 'Unknown Department' }}</span>
                                 </label>
                             @endif

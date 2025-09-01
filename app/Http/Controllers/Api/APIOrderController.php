@@ -77,6 +77,10 @@ class APIOrderController extends Controller
 
         if (isset($data['production_step']) && is_string($data['production_step'])) {
             $data['production_step'] = json_decode($data['production_step'], true);
+            // If decoding fails or it's not exactly 5 items, store the number 5
+            if (json_last_error() !== JSON_ERROR_NONE || !is_array($data['production_step']) || count($data['production_step']) !== 5) {
+                $data['production_step'] = 5;
+            }
             $data['status'] = 'pending';
         }
         $validator = Validator::make($data, [
@@ -162,7 +166,7 @@ class APIOrderController extends Controller
             'quantity' => 'sometimes|required|integer|min:1',
             'shade_number' => 'nullable|string|max:50',
             'color' => 'nullable|string|max:100',
-            'delivery_time' => 'nullable|date',
+            'delivery_time' => 'nullable|date|after_or_equal:today',
             'status' => 'nullable|in:pending,completed,progress',
         ]);
 
