@@ -1111,7 +1111,7 @@ License: You must have a valid license purchased only from themeforest(the above
                     </ul>
                 </li>
                 @php
-                    $orderMenuOpen = request()->routeIs('orders.*');
+                    $orderMenuOpen = request()->routeIs('orders.*') || request()->routeIs('processing-steps.*');
                 @endphp
                 <li>
                     <a href="javascript:;"
@@ -1128,8 +1128,15 @@ License: You must have a valid license purchased only from themeforest(the above
                         <li>
                             <a href="{{ route('orders.index') }}"
                                 class="side-menu {{ request()->routeIs('orders.*') ? 'side-menu--active' : '' }}">
-                                <div class="side-menu__icon"> <i data-lucide="orders"></i> </div>
+                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
                                 <div class="side-menu__title"> Orders </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('processing-steps.index') }}"
+                                class="side-menu {{ request()->routeIs('processing-steps.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__title"> Production Steps </div>
                             </a>
                         </li>
                     </ul>

@@ -1,4 +1,12 @@
 @extends('app')
+@push('styles')
+    <style>
+        .table td {
+            border-bottom-width: 1px;
+            padding: 0.25rem 0.5rem;
+        }   
+    </style>
+@endpush
 @section('content')
 
     <!-- BEGIN: Content -->
@@ -35,6 +43,7 @@
                         <th>Customer Name</th>
                         <th>Product Name</th>
                         <th>Production Step</th>
+                        <th>Working</th>
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Shade Number</th>
@@ -44,7 +53,7 @@
                         <th style="text-align: left;">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="text-sm">
                     @forelse ($orders as $order)
                         <tr>
                             <td>{{ $order->id }}</td>
@@ -56,6 +65,23 @@
                                     {{ implode(', ', collect($order->production_step)->map(fn($id) => $departments[$id] ?? '')->toArray()) }}
                                 @else
                                     {{ $order->production_step }}
+                                @endif
+                            </td>
+                            <td>
+                                {{-- ✅ Display Order Steps in Progress --}}
+                                @if($order->Orderstep->count())
+                                    <ul class="list-disc pl-4">
+                                        @foreach($order->Orderstep as $step)
+                                            <li>
+                                                {{ $departments[$step->d_id] ?? 'Unknown Department' }}
+                                                @if($step->note)
+                                                    <br><small class="text-muted">Note: {{ $step->note }}</small>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted">No step in progress</span>
                                 @endif
                             </td>
                             <td>{{ number_format($order->price, 2) }}</td>
@@ -71,17 +97,20 @@
                                 </select>
                             </td>
                             <td>
-                                <div class="flex gap-2 justify-content-left">
+                                <div class="flex items-start mt-4 gap-2 justify-content-left">
+                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-success "><i
+                                    data-lucide="view" class="w-4 h-4"></i></a></a>
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-primary "><i
+                                    data-lucide="edit" class="w-4 h-4"></i></a>
                                     <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this order?');"
                                         style="display: inline-block;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger mr-1 mb-2">Delete</button>
+                                        <button type="submit" class="btn btn-danger "><i
+                                    data-lucide="trash" class="w-4 h-4"></i></a></button>
                                     </form>
 
-                                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-primary mr-1 mb-2">Edit</a>
-                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-secondary mr-1 mb-2">View</a>
                                 </div>
                             </td>
                         </tr>

@@ -31,9 +31,11 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Production Steps</label>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 @foreach ($departments as $department)
-                    <p class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100">
-                        {{ in_array($department->id, $order->production_step ?? []) ? $department->name : '' }}
-                    </p>
+                    @if(in_array($department->id, $order->production_step ?? []))
+                        <p class="px-2 py-1 border border-gray-300 rounded-lg bg-gray-100">
+                            {{ in_array($department->id, $order->production_step ?? []) ? $department->name : '' }}
+                        </p>
+                    @endif
                 @endforeach
             </div>
         </div>
@@ -74,7 +76,7 @@
         <!-- Back Button -->
         <div class="col-span-12 flex justify-start pt-6 border-t">
             <a href="{{ route('orders.index') }}"
-                class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200 flex items-center">
+                class="px-6 py-2 bg-gray-500 text-white btn btn-primary rounded-lg hover:bg-gray-600 transition duration-200 flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i> Back to Orders
             </a>
         </div>

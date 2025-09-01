@@ -21,7 +21,12 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Order::with('department');
+        $query = Order::with([
+            'department',
+            'Orderstep' => function ($q) {
+                $q->where('status', 'progress');
+            }
+        ]);
 
         // Apply filters
         if ($request->has('status')) {
