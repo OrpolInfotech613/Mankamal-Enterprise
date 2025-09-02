@@ -13,7 +13,7 @@ class Order extends Model
     protected $table = 'orders';
 
     protected $fillable = [
-        'dealer_name',
+        'dealer_id',
         'customer_name',
         'product_name',
         'production_step',
@@ -36,6 +36,10 @@ class Order extends Model
     public function department()
     {
         return $this->belongsTo(Department::class, 'id');
+    }
+    public function dealer()
+    {
+        return $this->belongsTo(Dealer::class, 'dealer_id','id');
     }
 
     public function Orderstep()

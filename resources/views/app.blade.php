@@ -163,7 +163,7 @@ License: You must have a valid license purchased only from themeforest(the above
                         </ul>
                     </li>
                     --}}
-                
+
                 {{-- <li>
                     <a href="javascript:;" class="menu">
                         <div class="menu__icon"> <i data-lucide="shopping-bag"></i> </div>
@@ -1173,6 +1173,31 @@ License: You must have a valid license purchased only from themeforest(the above
                         </li>
                     </ul>
                 </li>
+                <li>
+                    <a href="javascript:;" class="side-menu side-menu--active">
+                        <div class="side-menu__icon"> <i data-lucide="users"></i> </div>
+                        <div class="side-menu__title">
+                            Dealer
+                            <div class="side-menu__sub-icon transform rotate-180">
+                                <i data-lucide="chevron-down"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <ul class="side-menu__sub-open">
+                        <li>
+                            <a href="{{ route('dealers.index') }}" class="side-menu side-menu--active">
+                                <div class="side-menu__icon"> <i data-lucide="list"></i> </div>
+                                <div class="side-menu__title"> Dealer List </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('dealers.create') }}" class="side-menu">
+                                <div class="side-menu__icon"> <i data-lucide="plus-circle"></i> </div>
+                                <div class="side-menu__title"> Add Dealer </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
         <!-- END: Side Menu -->
@@ -1999,7 +2024,8 @@ License: You must have a valid license purchased only from themeforest(the above
 
             // Disable mouse wheel scroll on number input
             function disableScrollOnNumberInput(event) {
-                if (document.activeElement.type === 'number' && !document.activeElement.classList.contains('page-input')) {
+                if (document.activeElement.type === 'number' && !document.activeElement.classList.contains(
+                        'page-input')) {
                     event.preventDefault();
                 }
             }
