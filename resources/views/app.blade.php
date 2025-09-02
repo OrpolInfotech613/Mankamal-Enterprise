@@ -24,11 +24,10 @@ License: You must have a valid license purchased only from themeforest(the above
     <title>Mankamal Enterprise</title>
     <!-- BEGIN: CSS Assets-->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
+
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTablesmin.js"></script>
@@ -38,6 +37,8 @@ License: You must have a valid license purchased only from themeforest(the above
 
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <style>
         /* Hide number input arrows/spinners */
@@ -1141,6 +1142,37 @@ License: You must have a valid license purchased only from themeforest(the above
                         </li>
                     </ul>
                 </li>
+                @php
+                    $productMenuOpen = request()->routeIs('products.*') || request()->routeIs('types.*');
+                @endphp
+                <li>
+                    <a href="javascript:;"
+                        class="side-menu {{ $productMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
+                        <div class="side-menu__icon"> <i data-lucide="user"></i> </div>
+                        <div class="side-menu__title">
+                            Product
+                            <i data-lucide="chevron-down"
+                                class="side-menu__sub-icon {{ $productMenuOpen ? 'transform rotate-180' : '' }}"></i>
+                        </div>
+                    </a>
+
+                    <ul class="{{ $productMenuOpen ? 'side-menu__sub-open' : 'hidden' }}">
+                        <li>
+                            <a href="{{ route('products.index') }}"
+                                class="side-menu {{ request()->routeIs('products.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__title"> Products </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('types.index') }}"
+                                class="side-menu {{ request()->routeIs('types.*') ? 'side-menu--active' : '' }}">
+                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__title"> Types </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
         <!-- END: Side Menu -->
@@ -1941,6 +1973,9 @@ License: You must have a valid license purchased only from themeforest(the above
         </div> --}}
     <!-- END: Dark Mode Switcher-->
 
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <!-- BEGIN: JS Assets-->
     <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
     </script>
@@ -1976,6 +2011,7 @@ License: You must have a valid license purchased only from themeforest(the above
             });
         });
     </script>
+
 
     @stack('scripts')
 

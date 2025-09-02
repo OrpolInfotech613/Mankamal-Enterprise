@@ -8,7 +8,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ProcessingStepController;
 use App\Http\Controllers\OrderController;
-
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\TypeController;
 
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
@@ -18,6 +19,9 @@ Route::group(['middleware' => 'auth', 'check.remember'], function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('roles', RoleController::class);
     Route::resource('departments', DepartmentController::class);
+    Route::get('products/search', [ProductController::class, 'search'])->name('products.search');
+    Route::resource('products', ProductController::class);
+    Route::resource('types', TypeController::class);
     Route::resource('users', UserController::class);
     Route::resource('processing-steps', ProcessingStepController::class);
     Route::resource('orders', OrderController::class);

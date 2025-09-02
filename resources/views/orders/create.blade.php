@@ -25,6 +25,7 @@
                         class="text-red-500">*</span></label>
                 <input type="text" id="product_name" name="product_name" required placeholder="Product Name"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select name="product_id" id="product_id" class="form-control field-new" style="width: 100%;" required></select>
             </div>
 
             <div class="col-span-12 md:col-span-6">
@@ -104,3 +105,34 @@
 
     </div>
 @endsection
+@push('scripts')
+<script>
+    $(document).ready(function () {
+        $('#product_id').select2({
+            placeholder: 'Search for a product',
+            ajax: {
+                url: '{{ route('products.search') }}',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term // search term
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+
+        // Preselect existing product on edit form
+        @if(isset($order) && $order->product)
+            let productOption = new Option("{{ $order->product->product_name }}", {{ $order->product->id }}, true, true);
+            $('#product_id').append(productOption).trigger('change');
+        @endif
+    });
+</script>
+@endpush

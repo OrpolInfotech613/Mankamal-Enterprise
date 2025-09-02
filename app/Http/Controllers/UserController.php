@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Branch;
 use App\Models\BranchUsers;
 use App\Models\Role;
 use App\Models\User;
@@ -88,7 +87,6 @@ class UserController extends Controller
         $auth = $this->authenticateAndConfigureBranch();
         $user = $auth['user'];
         $role = $auth['role'];
-        $branch = $auth['branch'];
         // dd($request->all()); // Debugging line to check the request data
         try {
             $request->validate([
@@ -98,7 +96,6 @@ class UserController extends Controller
                 'role_id' => 'required|integer',
                 'dob' => 'nullable|date',
                 'password' => 'required|nullable|string|min:6',
-                'branch_id' => 'required|exists:branches,id',
             ]);
         } catch (Exception $e) {
             dd($e->getMessage()); // Check what is failing
@@ -121,7 +118,6 @@ class UserController extends Controller
             'mobile' => $request->mobile,
             'role_id' => $request->role_id,
             'dob' => $request->dob,
-            'branch_id' => $request->branch_id,
             'password' => Hash::make($request->password),
             'is_active' => true,
             'email_verified_at' => now(),
@@ -140,10 +136,9 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::findOrFail($id);
-        $branch = Branch::where('id', $user->branch_id)->first();
         $user->role = Role::find($user->role_id);
 
-        return view('users.show', compact('user', 'branch'));
+        return view('users.show', compact('user'));
     }
 
     /**
@@ -152,7 +147,6 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $user = User::findOrFail($id);
-        $branch = Branch::where('id', $user->branch_id)->first();
         // Get roles from this branch
         $roles = Role::where('role_name', '!=', 'Super Admin')->get();
 
