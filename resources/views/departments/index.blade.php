@@ -35,11 +35,10 @@
                                         style="display: inline-block;">
                                         @csrf
                                         @method('DELETE') <!-- Add this line -->
-                                        <button type="submit" class="btn btn-danger mr-1 mb-2">Delete</button>
+                                        <button type="submit" class="btn btn-danger mr-1 mb-2"><i data-lucide="trash" class="w-4 h-4"></i></button>
                                     </form>
 
-                                    <a href="{{ route('departments.edit', $department->id) }}" class="btn btn-primary mr-1 mb-2"> Edit
-                                        {{-- {{dd($role->id)}} --}}
+                                    <a href="{{ route('departments.edit', $department->id) }}" class="btn btn-primary mr-1 mb-2"> <i data-lucide="edit" class="w-4 h-4"></i>
                                     </a>
                                 </div>
                             </td>

@@ -41,17 +41,17 @@
                                     <!-- <button class="btn btn-primary">Message</button> -->
                                     <div class="flex gap-2 justify-content-left">
                                         <a href="{{ route('users.show', $user->id) }}"
-                                            class="btn btn-primary mr-1 mb-2">View
+                                            class="btn btn-primary mr-1 mb-2"><i data-lucide="view" class="w-4 h-4"></i>
                                         </a>
                                         <form action="{{ route('users.destroy', $user->id) }}" method="POST"
                                             onsubmit="return confirm('Are you sure you want to delete this user?');"
                                             style="display: inline-block;">
                                             @csrf
                                             @method('DELETE') <!-- Add this line -->
-                                            <button type="submit" class="btn btn-danger mr-1 mb-2">Delete</button>
+                                            <button type="submit" class="btn btn-danger mr-1 mb-2"><i data-lucide="trash" class="w-4 h-4"></i></button>
                                         </form>
-                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary mr-1 mb-2">
-                                            Edit
+                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning mr-1 mb-2">
+                                            <i data-lucide="edit" class="w-4 h-4"></i>
                                         </a>
                                     </div>
                                 </td>
