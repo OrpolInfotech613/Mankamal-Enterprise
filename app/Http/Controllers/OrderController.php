@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderStep;
 use App\Models\ProcessingStep;
 use App\Models\Department;
+use App\Models\Dealer;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -23,6 +24,7 @@ class OrderController extends Controller
     {
         $query = Order::with([
             'department',
+            'dealer',
             'Orderstep' => function ($q) {
                 $q->where('status', 'progress');
             }
@@ -63,7 +65,9 @@ class OrderController extends Controller
         ->orderBy('step_order')
         ->get()
         ->groupBy('step_order');
-        return view('orders.create', compact('steps'));
+
+        $dealers = Dealer::all();
+        return view('orders.create', compact('steps', 'dealers'));
     }
 
 
@@ -137,8 +141,9 @@ class OrderController extends Controller
     public function edit($id)
     {
         $departments = Department::all();
-        $order = Order::with('Orderstep')->findOrFail($id);
-        return view('orders.edit', compact('order', 'departments'));
+        $order = Order::with('Orderstep','dealer')->findOrFail($id);
+        $dealers = Dealer::all();
+        return view('orders.edit', compact('order', 'departments','dealers'));
     }
 
 

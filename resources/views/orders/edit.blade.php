@@ -13,9 +13,20 @@
             <div class="col-span-12 md:col-span-6">
                 <label for="dealer_name" class="block text-sm font-medium text-gray-700 mb-1">Dealer Name <span
                         class="text-red-500">*</span></label>
-                <input type="text" id="dealer_name" name="dealer_name"
-                    value="{{ old('dealer_name', $order->dealer_name) }}" required placeholder="Enter Dealer Name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select id="dealer_id" name="dealer_id" required 
+                    class="form-control @error('dealer_id') is-invalid @enderror"
+                    {{ old('dealer_id', $record->dealer_id ?? '') ? '' : 'data-placeholder="true"' }}>
+                    <option value="">Select a Dealer</option>
+                    @forelse($dealers ?? [] as $dealer)
+                        <option value="{{ $dealer->id }}"
+                            {{ (isset($order) && $order->dealer_id == $dealer->id) ? 'selected' : '' }}
+                            {{ old('dealer_id', $record->dealer_id ?? '') == $dealer->id ? 'selected' : '' }}>
+                            {{ $dealer->name }}
+                        </option>
+                    @empty
+                        <option value="" disabled>No dealers available</option>
+                    @endforelse
+                </select>
             </div>
 
             <!-- Customer Name -->

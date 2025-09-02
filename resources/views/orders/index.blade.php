@@ -57,7 +57,7 @@
                     @forelse ($orders as $order)
                         <tr>
                             <td>{{ $order->id }}</td>
-                            <td>{{ $order->dealer_name }}</td>
+                            <td>{{ $order->dealer->name ?? 'N/A' }}</td>
                             <td>{{ $order->customer_name }}</td>
                             <td>{{ $order->product_name }}</td>
                             <td>
@@ -100,7 +100,7 @@
                             <td>
                                 <div class="flex items-start mt-4 gap-2 justify-content-left">
                                     <a href="{{ route('orders.show', $order->id) }}" class="btn btn-success "><i
-                                    data-lucide="view" class="w-4 h-4"></i></a></a>
+                                    data-lucide="view" class="w-4 h-4"></i></a>
                                     <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-primary "><i
                                     data-lucide="edit" class="w-4 h-4"></i></a>
                                     <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
