@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('dealer_id')->nullable();
             $table->string('customer_name')->nullable();
-            $table->string('product_name')->nullable();
+            $table->string('product_id')->nullable();
             $table->string('production_step')->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->integer('quantity')->nullable();

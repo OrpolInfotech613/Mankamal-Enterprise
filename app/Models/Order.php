@@ -15,7 +15,7 @@ class Order extends Model
     protected $fillable = [
         'dealer_id',
         'customer_name',
-        'product_name',
+        'product_id',
         'production_step',
         'price',
         'quantity',
@@ -40,6 +40,10 @@ class Order extends Model
     public function dealer()
     {
         return $this->belongsTo(Dealer::class, 'dealer_id','id');
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id','id');
     }
 
     public function Orderstep()

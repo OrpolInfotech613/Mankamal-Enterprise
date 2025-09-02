@@ -25,6 +25,7 @@ class OrderController extends Controller
         $query = Order::with([
             'department',
             'dealer',
+            'product',
             'Orderstep' => function ($q) {
                 $q->where('status', 'progress');
             }
@@ -86,9 +87,9 @@ class OrderController extends Controller
         }
         $data['status'] = 'pending';
         $validator = Validator::make($data, [
-            'dealer_name' => 'required|string|max:255',
+            'dealer_id' => 'required',
             'customer_name' => 'required|string|max:255',
-            'product_name' => 'required|string|max:255',
+            'product_id' => 'required',
             'production_step' => 'required|array',
             'price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:1',
@@ -168,9 +169,9 @@ class OrderController extends Controller
         }
 
         $validator = Validator::make($data, [
-            'dealer_name' => 'sometimes|required|string|max:255',
+            'dealer_id' => 'sometimes',
             'customer_name' => 'sometimes|required|string|max:255',
-            'product_name' => 'sometimes|required|string|max:255',
+            'product_id' => 'sometimes',
             'production_step' => 'sometimes|required|array',
             'price' => 'sometimes|required|numeric|min:0',
             'quantity' => 'sometimes|required|integer|min:1',
