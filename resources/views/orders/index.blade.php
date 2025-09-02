@@ -59,7 +59,7 @@
                             <td>{{ $order->id }}</td>
                             <td>{{ $order->dealer->name ?? 'N/A' }}</td>
                             <td>{{ $order->customer_name }}</td>
-                            <td>{{ $order->product_name }}</td>
+                            <td>{{ $order->product->product_name ?? 'N/A' }}</td>
                             <td>
                                 @if(is_array($order->production_step))
                                     {{ implode(', ', collect($order->production_step)->map(fn($id) => $departments[$id] ?? '')->toArray()) }}

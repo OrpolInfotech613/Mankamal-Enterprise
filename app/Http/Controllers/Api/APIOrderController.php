@@ -86,7 +86,7 @@ class APIOrderController extends Controller
         $validator = Validator::make($data, [
             'dealer_name' => 'required|string|max:255',
             'customer_name' => 'required|string|max:255',
-            'product_name' => 'required|string|max:255',
+            'product_id' => 'required',
             'production_step' => 'required|array',
             'price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:1',
@@ -160,7 +160,7 @@ class APIOrderController extends Controller
         $validator = Validator::make($request->all(), [
             'dealer_name' => 'sometimes|required|string|max:255',
             'customer_name' => 'sometimes|required|string|max:255',
-            'product_name' => 'sometimes|required|string|max:255',
+            'product_id' => 'sometimes',
             'production_step' => 'sometimes|required|string|max:100',
             'price' => 'sometimes|required|numeric|min:0',
             'quantity' => 'sometimes|required|integer|min:1',

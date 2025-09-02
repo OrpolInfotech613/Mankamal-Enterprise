@@ -41,13 +41,22 @@
             </div>
 
             <div class="col-span-12 md:col-span-6">
-                <label for="product_name" class="block text-sm font-medium text-gray-700 mb-1">
+                <label for="product_id" class="block text-sm font-medium text-gray-700 mb-1">
                     Product Name <span class="text-red-500">*</span>
                 </label>
-                <input type="text" id="product_name" name="product_name" value="{{ old('product_name') }}" required
-                    placeholder="Product Name"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <select name="product_id" id="product_id" class="form-control field-new" style="width: 100%;" required></select>
+                <div class="relative">
+                    <!-- Search Input -->
+                    <input type="text" id="productSearch" placeholder="Search Product..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+
+                    <!-- Hidden field to store product_id -->
+                    <input type="hidden" name="product_id" id="product_id" required>
+
+                    <!-- Dropdown Results -->
+                    <ul id="productResults"
+                        class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-y-auto hidden">
+                    </ul>
+                </div>
             </div>
 
             <div class="col-span-12 md:col-span-6">
@@ -130,32 +139,64 @@
 @endsection
 @push('scripts')
 <script>
-    $(document).ready(function () {
-        $('#product_id').select2({
-            placeholder: 'Search for a product',
-            ajax: {
-                url: '{{ route('products.search') }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        q: params.term // search term
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.results
-                    };
-                },
-                cache: true
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("productSearch");
+        const resultsBox = document.getElementById("productResults");
+        const hiddenField = document.getElementById("product_id");
+
+        let debounceTimer;
+
+        searchInput.addEventListener("keyup", function () {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.add("hidden");
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`/products/search?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        resultsBox.innerHTML = "";
+                        if (data.results && data.results.length > 0) {
+                            data.results.forEach(item => {
+                                const li = document.createElement("li");
+                                li.textContent = item.text;
+                                li.classList.add("px-4", "py-2", "cursor-pointer", "hover:bg-blue-100");
+                                li.dataset.id = item.id;
+                                resultsBox.appendChild(li);
+                            });
+                            resultsBox.classList.remove("hidden");
+                        } else {
+                            resultsBox.classList.add("hidden");
+                        }
+                    });
+            }, 300); // debounce 300ms
+        });
+
+        // Handle selection
+        resultsBox.addEventListener("click", function (e) {
+            if (e.target && e.target.nodeName === "LI") {
+                const productName = e.target.textContent;
+                const productId = e.target.dataset.id;
+
+                searchInput.value = productName;
+                hiddenField.value = productId;
+
+                resultsBox.innerHTML = "";
+                resultsBox.classList.add("hidden");
             }
         });
 
-        // Preselect existing product on edit form
-        @if(isset($order) && $order->product)
-            let productOption = new Option("{{ $order->product->product_name }}", {{ $order->product->id }}, true, true);
-            $('#product_id').append(productOption).trigger('change');
-        @endif
+        // Hide dropdown if clicked outside
+        document.addEventListener("click", function (e) {
+            if (!resultsBox.contains(e.target) && e.target !== searchInput) {
+                resultsBox.classList.add("hidden");
+            }
+        });
     });
 </script>
 @endpush
