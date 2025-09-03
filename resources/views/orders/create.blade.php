@@ -25,14 +25,16 @@
             <label for="dealer_id" class="block text-sm font-medium text-gray-700 mb-1">
                 Dealer Name <span class="text-red-500">*</span>
             </label>
-            <select id="dealer_id" name="dealer_id" required class="form-control">
-                <option value="">Select a Dealer</option>
-                @foreach ($dealers as $dealer)
-                    <option value="{{ $dealer->id }}" {{ old('dealer_id') == $dealer->id ? 'selected' : '' }}>
-                        {{ $dealer->name }}
-                    </option>
-                @endforeach
-            </select>
+            <div class="dealer-search-container relative">
+                <input type="text" id="dealer_search" name="dealer_search"
+                    value="{{ old('dealer_search') }}"
+                    placeholder="Type to search dealers..." autocomplete="off" required
+                    class="form-control field-new">
+                <input type="hidden" id="dealer_id" name="dealer_id" value="{{ old('dealer_id') }}" required>
+                <div id="dealer_dropdown" class="dealer-dropdown hidden">
+                    <div class="dropdown-content"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Customer -->
@@ -51,9 +53,9 @@
                 Product Name<span style="color: red;margin-left: 3px;"> *</span>
             </label>
             <div class="product-search-container" style="position: relative;">
-                <input id="product_search" type="text" name="product_search" class="form-control field-new"
+                <input id="product_search" type="text" value="{{ old('dealer_search') }}" name="product_search" class="form-control field-new"
                     placeholder="Type to search products..." autocomplete="off" required>
-                <input type="hidden" id="product_id" name="product_id" required>
+                <input type="hidden" id="product_id" name="product_id" value="{{ old('dealer_id') }}" required>
                 <div id="product_dropdown" class="product-dropdown" style="display: none;">
                     <div class="dropdown-content"></div>
                 </div>
@@ -201,6 +203,42 @@
             color: #666;
             font-style: italic;
         }
+
+        .dealer-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dealer-dropdown .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dealer-dropdown .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dealer-dropdown .dropdown-item:hover,
+        .dealer-dropdown .dropdown-item.highlighted {
+            background-color: #f5f5f5;
+        }
+
+        .dealer-dropdown .no-results {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 @endpush
 
@@ -213,10 +251,20 @@
         const dropdown = document.getElementById('product_dropdown');
         const dropdownContent = dropdown.querySelector('.dropdown-content');
 
+        const dealerSearch = document.getElementById('dealer_search');
+        const dealerId = document.getElementById('dealer_id');
+        const dealerDropdown = document.getElementById('dealer_dropdown');
+        const dealerDropdownContent = dealerDropdown.querySelector('.dropdown-content');
+
         let currentProducts = [];
         let currentIndex = -1;
         let searchTimeout;
         let isSelecting = false;
+
+        let dealerResults = [];
+        let dealerIndex = -1;
+        let dealerTimeout;
+        let isDealerSelecting = false;
 
         function setupEnterNavigation() {
             let currentFieldIndex = 0;
@@ -448,6 +496,114 @@
         productSearch.addEventListener('blur', function() {
             if (!isSelecting && this.value.trim() === '') {
                 productId.value = '';
+            }
+        });
+
+        // Search dealer on input
+        dealerSearch.addEventListener('input', function () {
+            const term = this.value.trim();
+            clearTimeout(dealerTimeout);
+            dealerTimeout = setTimeout(() => {
+                if (term.length >= 2) {
+                    fetch(`{{ route('dealers.search') }}?q=${encodeURIComponent(term)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                dealerResults = data.dealers;
+                                renderDealerDropdown(dealerResults);
+                            } else {
+                                renderNoDealerResults();
+                            }
+                        })
+                        .catch(() => {
+                            renderNoDealerResults();
+                        });
+                } else {
+                    hideDealerDropdown();
+                }
+            }, 300);
+        });
+
+        function renderDealerDropdown(dealers) {
+            dealerDropdownContent.innerHTML = '';
+            dealerIndex = -1;
+
+            if (dealers.length === 0) {
+                renderNoDealerResults();
+                return;
+            }
+
+            dealers.forEach((dealer, index) => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.dataset.index = index;
+                item.innerHTML = dealer.text;
+
+                item.addEventListener('click', () => {
+                    selectDealer(dealer);
+                });
+
+                dealerDropdownContent.appendChild(item);
+            });
+
+            dealerDropdown.classList.remove('hidden');
+        }
+
+        function renderNoDealerResults() {
+            dealerDropdownContent.innerHTML = '<div class="no-results">No dealers found</div>';
+            dealerResults = [];
+            dealerIndex = -1;
+            dealerDropdown.classList.remove('hidden');
+        }
+
+        function hideDealerDropdown() {
+            dealerDropdown.classList.add('hidden');
+            dealerIndex = -1;
+        }
+
+        function selectDealer(dealer) {
+            isDealerSelecting = true;
+            dealerSearch.value = dealer.text;
+            dealerId.value = dealer.id;
+            hideDealerDropdown();
+            setTimeout(() => {
+                isDealerSelecting = false;
+            }, 100);
+        }
+
+        // Handle dropdown navigation
+        dealerSearch.addEventListener('keydown', function (e) {
+            const items = dealerDropdownContent.querySelectorAll('.dropdown-item');
+            if (dealerDropdown.classList.contains('hidden') || items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                dealerIndex = (dealerIndex + 1) % items.length;
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                dealerIndex = (dealerIndex - 1 + items.length) % items.length;
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (dealerIndex >= 0 && dealerResults[dealerIndex]) {
+                    selectDealer(dealerResults[dealerIndex]);
+                }
+            }
+
+            items.forEach(item => item.classList.remove('highlighted'));
+            if (dealerIndex >= 0) items[dealerIndex].classList.add('highlighted');
+        });
+
+        // Hide on outside click
+        document.addEventListener('click', function (e) {
+            if (!dealerSearch.contains(e.target) && !dealerDropdown.contains(e.target)) {
+                hideDealerDropdown();
+            }
+        });
+
+        // Clear hidden ID if input is cleared manually
+        dealerSearch.addEventListener('blur', function () {
+            if (!isDealerSelecting && this.value.trim() === '') {
+                dealerId.value = '';
             }
         });
     });
