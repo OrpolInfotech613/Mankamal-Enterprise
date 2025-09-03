@@ -102,10 +102,7 @@
                 <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Color</label>
                 <div class="flex items-center">
                     <input type="text" id="color" name="color" value="{{ old('color', $order->color) }}"
-                        placeholder="Color"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <input type="color" id="color_picker" class="ml-2 h-10 w-10 cursor-pointer"
-                        value="{{ old('color', $order->color) }}">
+                        placeholder="Color" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
 

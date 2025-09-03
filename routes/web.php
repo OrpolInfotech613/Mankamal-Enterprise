@@ -11,6 +11,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TypeController;
 use App\Http\Controllers\DealerController;
+use App\Http\Controllers\EmployeeController;
 
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
@@ -27,6 +28,8 @@ Route::group(['middleware' => 'auth', 'check.remember'], function () {
     Route::resource('processing-steps', ProcessingStepController::class);
     Route::resource('orders', OrderController::class);
     Route::resource('dealers', DealerController::class);
+    Route::resource('employees', EmployeeController::class);
+
     Route::post('/orders/update-status/{id}', [OrderController::class, 'updateStatus'])->name('orders.update-status');
 });
 

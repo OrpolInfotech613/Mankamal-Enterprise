@@ -31,7 +31,7 @@
                     <!-- Dealer Name -->
                     <div class="flex items-center mt-3 col-span-6">
                         <i data-lucide="user" class="w-4 h-4 text-slate-500 mr-2"></i>
-                        Dealer : {{ $order->dealer_name }}
+                        Dealer : {{ $order->dealer->name }}
                     </div>
 
                     <!-- Customer Name -->
@@ -43,7 +43,7 @@
                     <!-- Product Name -->
                     <div class="flex items-center mt-3 col-span-6">
                         <i data-lucide="package" class="w-4 h-4 text-slate-500 mr-2"></i>
-                        Product : {{ $order->product_name }}
+                        Product : {{ $order->product->product_name }}
                     </div>
 
                     <!-- Production Steps -->
