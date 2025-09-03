@@ -222,7 +222,15 @@
             let currentFieldIndex = 0;
 
             const formFields = [
-                { selector: '#product_search', type: 'input' }
+                { selector: '#dealer_id', type: 'select' },
+                { selector: '#customer_name', type: 'input' },
+                { selector: '#product_search', type: 'input' },
+                { selector: '#product_search', type: 'input' },
+                { selector: '#price', type: 'input' },
+                { selector: '#quantity', type: 'input' },
+                { selector: '#shade_number', type: 'input' },
+                { selector: '#color', type: 'input' },
+                { selector: '#delivery_time', type: 'input' },
             ];
 
             function focusField(selector) {

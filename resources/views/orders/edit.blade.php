@@ -38,13 +38,27 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
-            <!-- Product Name -->
+            {{-- <!-- Product Name -->
             <div class="col-span-12 md:col-span-6">
                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-1">Product Name <span
                         class="text-red-500">*</span></label>
                 <input type="text" id="product_name" name="product_name"
                     value="{{ old('product_name', $order->product_name) }}" required placeholder="Product Name"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div> --}}
+             <!-- Product Search -->
+            <div class="col-span-12 md:col-span-6">
+                <label for="product_search" class="form-label w-full flex flex-col sm:flex-row">
+                    Product Name<span style="color: red;margin-left: 3px;"> *</span>
+                </label>
+                <div class="product-search-container" style="position: relative;">
+                    <input id="product_search" type="text" name="product_search" class="form-control field-new"
+                        placeholder="Type to search products..." autocomplete="off" required>
+                    <input type="hidden" id="product_id" name="product_id" required>
+                    <div id="product_dropdown" class="product-dropdown" style="display: none;">
+                        <div class="dropdown-content"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Production Step -->
@@ -132,15 +146,321 @@
 
             <!-- Form Actions -->
             <div class="col-span-12 flex justify-between pt-6 border-t">
-                <button type="submit"
-                    class="px-6 py-2 bg-blue-600 text-dark rounded-lg hover:bg-blue-700 transition duration-200 flex items-center">
+                <button type="submit" class="btn btn-success text-dark transition duration-200 flex items-center">
                     <i class="fas fa-save mr-2"></i> Update Order
                 </button>
-                <a href="{{ route('orders.index') }}"
-                    class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-200 flex items-center">
+                <a href="{{ route('orders.index') }}" class="ml-2 btn btn-danger text-white hover:btn-danger-600 transition duration-200 flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Orders
                 </a>
             </div>
         </form>
     </div>
 @endsection
+
+@push('styles')
+    <style>
+        .product-search-container {
+            position: relative;
+        }
+
+        .product-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item.highlighted {
+            background-color: #f5f5f5;
+        }
+
+        .dropdown-item.selected {
+            background-color: #e3f2fd;
+        }
+
+        .product-name {
+            font-weight: 500;
+        }
+
+        .product-prices {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .no-results {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+@endpush
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productSearch = document.getElementById('product_search');
+        const productId = document.getElementById('product_id');
+        const dropdown = document.getElementById('product_dropdown');
+        const dropdownContent = dropdown.querySelector('.dropdown-content');
+
+        let currentProducts = [];
+        let currentIndex = -1;
+        let searchTimeout;
+        let isSelecting = false;
+
+        function setupEnterNavigation() {
+            let currentFieldIndex = 0;
+
+            const formFields = [
+                { selector: '#dealer_id', type: 'select' },
+                { selector: '#customer_name', type: 'input' },
+                { selector: '#product_search', type: 'input' },
+                { selector: '#product_search', type: 'input' },
+                { selector: '#price', type: 'input' },
+                { selector: '#quantity', type: 'input' },
+                { selector: '#shade_number', type: 'input' },
+                { selector: '#color', type: 'input' },
+                { selector: '#delivery_time', type: 'input' },
+            ];
+
+            function focusField(selector) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.focus();
+                    if (element.tagName === 'SELECT') {
+                        setTimeout(() => {
+                            if (element.size <= 1) {
+                                element.click();
+                            }
+                        }, 100);
+                    }
+                }
+            }
+
+            function handleFormFieldNavigation(e, fieldIndex) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    if (fieldIndex < formFields.length - 1) {
+                        currentFieldIndex = fieldIndex + 1;
+                        focusField(formFields[currentFieldIndex].selector);
+                    } else {
+                        const submitButton = document.querySelector('button[type="submit"]');
+                        if (submitButton) {
+                            submitButton.focus();
+                        }
+                    }
+                }
+            }
+
+            formFields.forEach((field, index) => {
+                const element = document.querySelector(field.selector);
+                if (element) {
+                    element.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            handleFormFieldNavigation(e, index);
+                        }
+                    });
+                }
+            });
+
+            setTimeout(() => {
+                focusField(formFields[0].selector);
+            }, 500);
+        }
+
+        setupEnterNavigation();
+
+        // Search products with debounce
+        productSearch.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (searchTerm.length >= 2) {
+                    searchProducts(searchTerm);
+                } else {
+                    hideDropdown();
+                }
+            }, 300);
+        });
+
+        // Handle keyboard navigation
+        productSearch.addEventListener('keydown', function(e) {
+            if (dropdown.style.display === 'none') return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    navigateDropdown(1);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    navigateDropdown(-1);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentIndex >= 0 && currentProducts[currentIndex]) {
+                        selectProduct(currentProducts[currentIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    hideDropdown();
+                    break;
+            }
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!productSearch.contains(e.target) && !dropdown.contains(e.target)) {
+                hideDropdown();
+            }
+        });
+
+        // Prevent form submission on Enter if dropdown is open
+        productSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && dropdown.style.display !== 'none') {
+                e.preventDefault();
+            }
+        });
+
+        function searchProducts(searchTerm) {
+            fetch(`{{ route('products.search') }}?q=${encodeURIComponent(searchTerm)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentProducts = data.products;
+                        displayProducts(currentProducts);
+                    } else {
+                        showNoResults();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error searching products:', error);
+                    showNoResults();
+                });
+        }
+
+        function displayProducts(products) {
+            if (products.length === 0) {
+                showNoResults();
+                return;
+            }
+
+            dropdownContent.innerHTML = '';
+            currentIndex = -1;
+
+            products.forEach((product, index) => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.dataset.index = index;
+
+                item.innerHTML = `
+                    <div class="product-name">${product.text}</div>
+                    `;
+
+                item.addEventListener('click', function() {
+                    selectProduct(product);
+                });
+
+                dropdownContent.appendChild(item);
+            });
+
+            showDropdown();
+        }
+
+        function showNoResults() {
+            dropdownContent.innerHTML = '<div class="no-results">No products found</div>';
+            currentProducts = [];
+            currentIndex = -1;
+            showDropdown();
+        }
+
+        function navigateDropdown(direction) {
+            const items = dropdownContent.querySelectorAll('.dropdown-item');
+            if (items.length === 0) return;
+
+            // Remove current highlight
+            if (currentIndex >= 0) {
+                items[currentIndex].classList.remove('highlighted');
+            }
+
+            // Calculate new index
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = items.length - 1;
+            if (currentIndex >= items.length) currentIndex = 0;
+
+            // Add highlight to new item
+            items[currentIndex].classList.add('highlighted');
+
+            // Scroll into view
+            items[currentIndex].scrollIntoView({
+                block: 'nearest',
+                behavior: 'smooth'
+            });
+        }
+
+        function selectProduct(product) {
+            isSelecting = true;
+
+            productSearch.value = product.text;
+            productId.value = product.id;
+
+
+            hideDropdown();
+
+            setTimeout(() => {
+                isSelecting = false;
+            }, 100);
+        }
+
+        function showDropdown() {
+            dropdown.style.display = 'block';
+        }
+
+        function hideDropdown() {
+            dropdown.style.display = 'none';
+            currentIndex = -1;
+
+            // Clear highlights
+            const items = dropdownContent.querySelectorAll('.dropdown-item');
+            items.forEach(item => item.classList.remove('highlighted'));
+        }
+
+        // Clear product selection if search input is manually cleared
+        productSearch.addEventListener('blur', function() {
+            if (!isSelecting && this.value.trim() === '') {
+                productId.value = '';
+            }
+        });
+    });
+</script>
+@endpush
