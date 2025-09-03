@@ -29,24 +29,6 @@
                         value="{{ old('email', $user->email) }}" placeholder="Enter customer email" maxlength="255">
                 </div>
 
-                <!-- Phone -->
-                <div class="input-form col-span-3 mt-3">
-                    <label for="phone" class="form-label w-full flex flex-col sm:flex-row">
-                        Phone
-                    </label>
-                    <input id="phone" type="text" name="mobile" class="form-control field-new"
-                        value="{{ old('mobile', $user->mobile) }}" placeholder="Enter phone number" maxlength="15">
-                </div>
-
-                <!-- Date of Birth -->
-                <div class="input-form col-span-3 mt-3">
-                    <label for="dob" class="form-label w-full flex flex-col sm:flex-row">
-                        Date of Birth
-                    </label>
-                    <input id="dob" type="date" name="dob" class="form-control field-new"
-                        value="{{ old('dob', $user->dob ? \Carbon\Carbon::parse($user->dob)->format('Y-m-d') : '') }}">
-                </div>
-
                 <!-- Role -->
                 <div class="input-form col-span-3 mt-3">
                     <label for="role_id" class="form-label w-full flex flex-col sm:flex-row">
@@ -62,34 +44,6 @@
                     </select>
                 </div>
 
-                @php
-                    $user = Auth::user();
-                    $userType = session('user_type');
-                    $userRole = session('user_role');
-                    $userBranchId = session('branch_id');
-                    $userName = session('user_name');
-                    $branchName = session('branch_name');
-                @endphp
-                @if ($user->role_data->role_name === 'Super Admin')
-                <!-- Branch -->
-                <div class="input-form col-span-3 mt-3">
-                    <label for="branch_id" class="form-label w-full flex flex-col sm:flex-row">
-                        Branch<p style="color: red;margin-left: 3px;"> *</p>
-                    </label>
-                    <input id="branch_id" type="text" name="branch_id" class="form-control field-new"
-                        value="{{ old('branch_id', $user->branch->name) }}" disabled >
-                    {{-- <select id="branch_id" name="branch_id" class="form-control field-new" required>
-                        <option value="" disabled {{ !$user->branch->id ? 'selected' : '' }}>Choose...</option>
-                        @foreach ($branches as $branch)
-                            <option value="{{ $branch->id }}" {{ $branch->id == $branch->id ? 'selected' : '' }}>
-                                {{ $branch->name }}
-                            </option>
-                        @endforeach
-                    </select> --}}
-                </div>
-                @else
-                    <input type="hidden" name="branch_id" value=" {{ $user['branch_id'] }}">
-                @endif
                 <!-- Password -->
                 <div class="input-form col-span-3 mt-3">
                     <label for="password" class="form-label w-full flex flex-col sm:flex-row">
@@ -105,3 +59,79 @@
         </form>
     </div>
 @endsection
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setupEnterNavigation();
+    });
+
+    function setupEnterNavigation() {
+        let currentFieldIndex = 0;
+
+        // Define field sequence for category form
+        const formFields = [
+            {
+                selector: '#name',
+                type: 'input'
+            },
+            {
+                selector: '#email',
+                type: 'input'
+            },
+            {
+                selector: '#role_id',
+                type: 'select'
+            },
+            {
+                selector: '#password',
+                type: 'input'
+            },
+        ];
+
+        function focusField(selector) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.focus();
+                if (element.tagName === 'SELECT') {
+                    setTimeout(() => {
+                        if (element.size <= 1) {
+                            element.click();
+                        }
+                    }, 100);
+                }
+            }
+        }
+
+        function handleFormFieldNavigation(e, fieldIndex) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+
+                if (fieldIndex < formFields.length - 1) {
+                    currentFieldIndex = fieldIndex + 1;
+                    focusField(formFields[currentFieldIndex].selector);
+                } else {
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.focus();
+                    }
+                }
+            }
+        }
+
+        formFields.forEach((field, index) => {
+            const element = document.querySelector(field.selector);
+            if (element) {
+                element.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        handleFormFieldNavigation(e, index);
+                    }
+                });
+            }
+        });
+
+        setTimeout(() => {
+            focusField(formFields[0].selector);
+        }, 500);
+    }
+</script>
+@endpush

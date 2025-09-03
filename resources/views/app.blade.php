@@ -1167,50 +1167,56 @@ License: You must have a valid license purchased only from themeforest(the above
                         </li>
                     </ul>
                 </li>
+                @php
+                    $dealerMenuOpen = request()->routeIs('dealers.*');
+                @endphp
                 <li>
-                    <a href="javascript:;" class="side-menu side-menu--active">
+                    <a href="javascript:;" class="side-menu {{ $dealerMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
                         <div class="side-menu__icon"> <i data-lucide="users"></i> </div>
                         <div class="side-menu__title">
                             Dealer
-                            <div class="side-menu__sub-icon transform rotate-180">
+                            <div class="side-menu__sub-icon {{ $dealerMenuOpen ? 'transform rotate-180' : '' }}">
                                 <i data-lucide="chevron-down"></i>
                             </div>
                         </div>
                     </a>
-                    <ul class="side-menu__sub-open">
+                    <ul class="{{ $dealerMenuOpen ? 'side-menu__sub-open' : 'hidden' }}">
                         <li>
-                            <a href="{{ route('dealers.index') }}" class="side-menu side-menu--active">
+                            <a href="{{ route('dealers.index') }}" class="side-menu {{ request()->routeIs('dealers.index') ? 'side-menu--active' : '' }}">
                                 <div class="side-menu__icon"> <i data-lucide="list"></i> </div>
                                 <div class="side-menu__title"> Dealer List </div>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('dealers.create') }}" class="side-menu">
+                            <a href="{{ route('dealers.create') }}" class="side-menu {{ request()->routeIs('dealers.create') ? 'side-menu--active' : '' }}">
                                 <div class="side-menu__icon"> <i data-lucide="plus-circle"></i> </div>
                                 <div class="side-menu__title"> Add Dealer </div>
                             </a>
                         </li>
                     </ul>
                 </li>
+                @php
+                    $employeeMenuOpen = request()->routeIs('employees.*');
+                @endphp
                 <li>
-                    <a href="javascript:;" class="side-menu">
+                    <a href="javascript:;" class="side-menu {{ $employeeMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
                         <div class="side-menu__icon"> <i data-lucide="users"></i> </div>
                         <div class="side-menu__title">
                             Employee
-                            <div class="side-menu__sub-icon transform rotate-180">
+                            <div class="side-menu__sub-icon {{ $employeeMenuOpen ? 'transform rotate-180' : '' }}">
                                 <i data-lucide="chevron-down"></i>
                             </div>
                         </div>
                     </a>
-                    <ul class="side-menu__sub-open">
+                    <ul class="{{ $employeeMenuOpen ? 'side-menu__sub-open' : 'hidden' }}">
                         <li>
-                            <a href="{{ route('employees.index') }}" class="side-menu">
+                            <a href="{{ route('employees.index') }}" class="side-menu {{ request()->routeIs('employees.index') ? 'side-menu--active' : '' }}">
                                 <div class="side-menu__icon"> <i data-lucide="list"></i> </div>
                                 <div class="side-menu__title"> Employee List </div>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('employees.create') }}" class="side-menu">
+                            <a href="{{ route('employees.create') }}" class="side-menu {{ request()->routeIs('employees.create') ? 'side-menu--active' : '' }}">
                                 <div class="side-menu__icon"> <i data-lucide="plus-circle"></i> </div>
                                 <div class="side-menu__title"> Add Employee </div>
                             </a>

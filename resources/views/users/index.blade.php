@@ -18,10 +18,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th style="TEXT-ALIGN: left;">Phone</th>
-                        <th>Dob</th>
                         <th>Role</th>
-                        <th>Branch</th>
                         <th style="TEXT-ALIGN: left;">Actions</th>
                     </tr>
                 </thead>
@@ -32,10 +29,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
-                                <td style="TEXT-ALIGN: left;">{{ $user->mobile }}</td>
-                                <td>{{ $user->dob }}</td>
                                 <td>{{ $user->role_data->role_name ?? '-' }}</td>
-                                <td>{{ $user->branch->name ?? '-' }}</td>
                                 <td>
                                     <!-- Add buttons for actions like 'View', 'Edit' etc. -->
                                     <!-- <button class="btn btn-primary">Message</button> -->

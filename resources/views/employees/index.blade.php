@@ -6,15 +6,14 @@
         <h2 class="intro-y text-lg font-medium mt-10 heading">
             Employee
         </h2>
-        <div class="grid grid-cols-12 gap-6 mt-5 grid-updated">
+        <div class="grid grid-cols-12 gap-6 mt-5 grid-updated ">
             <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2">
                 <a href="{{ Route('employees.create') }}" class="btn btn-primary shadow-md mr-2 btn-hover">Add New Employee</a>
             </div>
-        </div>
 
-        <table class="table table-bordered table-striped w-full">
+        <table class="table table-bordered intro-y col-span-12">
             <thead>
-                <tr>
+                <tr class="bg-primary font-bold text-white">
                     <th>#</th>
                     <th>Name</th>
                     <th>Email</th>
@@ -37,9 +36,7 @@
                         <td>{{ $employee->doj?->format('d-m-Y') }}</td>
                         <td>{{ $employee->dob?->format('d-m-Y') }}</td>
                         <td>
-                            <span class="badge {{ $employee->status == 'active' ? 'bg-success' : 'bg-danger' }}">
-                                {{ ucfirst($employee->status) }}
-                            </span>
+                            {{ ucfirst($employee->status) }}
                         </td>
                         <td>
                             <a href="{{ route('employees.show', $employee->id) }}" class="btn btn-success btn-sm"><i data-lucide="view" class="w-4 h-4"></i></a>
@@ -61,5 +58,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
+
     </div>
 @endsection

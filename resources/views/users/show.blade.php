@@ -26,20 +26,8 @@
                             Email: {{ $user->email ?? 'N/A' }}
                         </div>
                         <div class="flex items-center mt-3">
-                            <i data-lucide="phone" class="w-4 h-4 text-slate-500 mr-2"></i>
-                            Mobile: {{ $user->mobile ?? 'N/A' }}
-                        </div>
-                        <div class="flex items-center mt-3">
-                            <i data-lucide="calendar" class="w-4 h-4 text-slate-500 mr-2"></i>
-                            DOB: {{ $user->dob ? \Carbon\Carbon::parse($user->dob)->format('d-m-Y') : 'N/A' }}
-                        </div>
-                        <div class="flex items-center mt-3">
                             <i data-lucide="shield" class="w-4 h-4 text-slate-500 mr-2"></i>
                             Role: {{ $user->role->role_name ?? '-' }}
-                        </div>
-                        <div class="flex items-center mt-3">
-                            <i data-lucide="shield" class="w-4 h-4 text-slate-500 mr-2"></i>
-                            Branch: {{ $branch->name ?? '-' }}
                         </div>
                     </div>
                 </div>
