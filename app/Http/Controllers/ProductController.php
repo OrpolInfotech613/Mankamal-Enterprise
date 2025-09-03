@@ -160,7 +160,12 @@ class ProductController extends Controller
             ];
         }
 
-        return response()->json(['results' => $results]);
+        if($results){
+            return response()->json(['success' => true,'products' => $results]);
+        }else{
+            return response()->json(['success' => false,'products' => $results]);
+        }
+
     }
 
 }
