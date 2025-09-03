@@ -111,4 +111,62 @@
             document.getElementById('remove_image').value = 1; // mark image for deletion
         }
     }
+     document.addEventListener('DOMContentLoaded', function() {
+      function setupEnterNavigation() {
+            let currentFieldIndex = 0;
+
+            const formFields = [
+                { selector: '#product_name', type: 'select' },
+                { selector: '#type_id', type: 'input' },
+                { selector: '#fileInput', type: 'file' },
+            ];
+
+            function focusField(selector) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.focus();
+                    if (element.tagName === 'SELECT') {
+                        setTimeout(() => {
+                            if (element.size <= 1) {
+                                element.click();
+                            }
+                        }, 100);
+                    }
+                }
+            }
+
+            function handleFormFieldNavigation(e, fieldIndex) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    if (fieldIndex < formFields.length - 1) {
+                        currentFieldIndex = fieldIndex + 1;
+                        focusField(formFields[currentFieldIndex].selector);
+                    } else {
+                        const submitButton = document.querySelector('button[type="submit"]');
+                        if (submitButton) {
+                            submitButton.focus();
+                        }
+                    }
+                }
+            }
+
+            formFields.forEach((field, index) => {
+                const element = document.querySelector(field.selector);
+                if (element) {
+                    element.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            handleFormFieldNavigation(e, index);
+                        }
+                    });
+                }
+            });
+
+            setTimeout(() => {
+                focusField(formFields[0].selector);
+            }, 500);
+        }
+
+        setupEnterNavigation();
+    });
 </script>
