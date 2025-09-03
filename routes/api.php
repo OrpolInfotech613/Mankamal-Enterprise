@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\API\DepartmentAuthController;
+use App\Http\Controllers\DealerController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
@@ -17,6 +19,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/profile', [DepartmentAuthController::class, 'profile']);
     Route::post('/logout', [DepartmentAuthController::class, 'logout']);
+    
+    Route::get('/dealers', [DealerController::class, 'APIindex']);
+    Route::get('/products', [ProductController::class, 'APIindex']);
 
     // Orders routes with department scope
     Route::prefix('orders')->group(function () {
