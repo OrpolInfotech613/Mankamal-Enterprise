@@ -84,7 +84,7 @@ class APIOrderController extends Controller
             $data['status'] = 'pending';
         }
         $validator = Validator::make($data, [
-            'dealer_id' => 'required|string|max:255',
+            'dealer_id' => 'required',
             'customer_name' => 'required|string|max:255',
             'product_id' => 'required',
             'production_step' => 'required|array',
