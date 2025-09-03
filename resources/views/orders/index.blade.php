@@ -101,8 +101,7 @@
                                 <div class="flex items-start mt-4 gap-2 justify-content-left">
                                     <a href="{{ route('orders.show', $order->id) }}" class="btn btn-success "><i
                                     data-lucide="view" class="w-4 h-4"></i></a>
-                                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-primary "><i
-                                    data-lucide="edit" class="w-4 h-4"></i></a>
+                                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-primary "><i data-lucide="edit" class="w-4 h-4"></i></a>
                                     <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
                                         onsubmit="return confirm('Are you sure you want to delete this order?');"
                                         style="display: inline-block;">

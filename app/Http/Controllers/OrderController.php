@@ -128,21 +128,21 @@ class OrderController extends Controller
      */
     public function show(string $id)
     {
-        $order = Order::find($id);
+        $order = Order::with('Orderstep','dealer','department','product')->find($id);
         $departments = Department::all();
         if (!$order) {
             return response()->json([
                 'message' => 'order not found'
             ], 404);
         }
-
-        return view('orders.show', compact('order', 'departments'));
+        $dealers = Dealer::all(); 
+        return view('orders.show', compact('order', 'departments','dealers'));
     }
 
     public function edit($id)
     {
         $departments = Department::all();
-        $order = Order::with('Orderstep','dealer')->findOrFail($id);
+        $order = Order::with('Orderstep','dealer','product')->findOrFail($id);
         $dealers = Dealer::all();
         return view('orders.edit', compact('order', 'departments','dealers'));
     }

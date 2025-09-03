@@ -29,7 +29,7 @@ License: You must have a valid license purchased only from themeforest(the above
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
 
-    
+
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
@@ -101,9 +101,9 @@ License: You must have a valid license purchased only from themeforest(the above
                         </li>
                     </ul>
                 </li>
-              
-                    
-                    {{-- <li>
+
+
+                {{-- <li>
                     <li>
                         <a href="javascript:;"
                             class="menu {{ request()->routeIs('User Mangement.*') ? 'side-menu--active side-menu--opensss' : '' }}{{ request()->routeIs('items.*') ? 'side-menu--active side-menu--opensss' : '' }}">
@@ -766,8 +766,7 @@ License: You must have a valid license purchased only from themeforest(the above
         <div class="h-full flex items-center">
             <!-- BEGIN: Logo -->
             <a href="{{ route('dashboard') }}" class="logo -intro-x hidden md:flex xl:w-[180px] block">
-                <img alt="Midone - HTML Admin Template" class="logo__image w-50"
-                    src="{{ asset('images/logo.png') }}">
+                <img alt="Midone - HTML Admin Template" class="logo__image w-50" src="{{ asset('images/logo.png') }}">
             </a>
             <!-- END: Logo -->
             <!-- BEGIN: Breadcrumb -->
@@ -777,7 +776,7 @@ License: You must have a valid license purchased only from themeforest(the above
                         <div class="font-medium">
                             {{-- <div class="font-medium">{{ $user->name }}</div> --}}
                         </div>
-                       
+
                     </li>
                 </ol>
             </nav>
@@ -785,8 +784,7 @@ License: You must have a valid license purchased only from themeforest(the above
             <!-- BEGIN: Search -->
             <div class="intro-x relative mr-3 sm:mr-6">
                 <div class="search hidden sm:block">
-                    <input type="text" class="search__input form-control border-transparent"
-                        placeholder="Search...">
+                    <input type="text" class="search__input form-control border-transparent" placeholder="Search...">
                     <i data-lucide="search" class="search__icon dark:text-slate-500"></i>
                 </div>
                 <a class="notification notification--light sm:hidden" href=""> <i data-lucide="search"
@@ -1009,12 +1007,12 @@ License: You must have a valid license purchased only from themeforest(the above
                             <div class="font-medium">
                                 {{-- <div class="font-medium">{{ $user->name }}</div> --}}
                             </div>
-                           
+
                         </li>
                         <li>
                             <hr class="dropdown-divider border-white/[0.08]">
                         </li>
-                        
+
                         <li>
                             <a href="{{ route('logout') }}" class="dropdown-item hover:bg-white/5"> <i
                                     data-lucide="toggle-right" class="w-4 h-4 mr-2"></i> Logout </a>
@@ -1067,7 +1065,10 @@ License: You must have a valid license purchased only from themeforest(the above
                     </ul>
                 </li>
                 @php
-                    $userMenuOpen = request()->routeIs('users.*') || request()->routeIs('roles.*') || request()->routeIs('departments.*');
+                    $userMenuOpen =
+                        request()->routeIs('users.*') ||
+                        request()->routeIs('roles.*') ||
+                        request()->routeIs('departments.*');
                 @endphp
                 <li>
                     <a href="javascript:;"
@@ -1191,6 +1192,32 @@ License: You must have a valid license purchased only from themeforest(the above
                         </li>
                     </ul>
                 </li>
+                <li>
+                    <a href="javascript:;" class="side-menu">
+                        <div class="side-menu__icon"> <i data-lucide="users"></i> </div>
+                        <div class="side-menu__title">
+                            Employee
+                            <div class="side-menu__sub-icon transform rotate-180">
+                                <i data-lucide="chevron-down"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <ul class="side-menu__sub-open">
+                        <li>
+                            <a href="{{ route('employees.index') }}" class="side-menu">
+                                <div class="side-menu__icon"> <i data-lucide="list"></i> </div>
+                                <div class="side-menu__title"> Employee List </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('employees.create') }}" class="side-menu">
+                                <div class="side-menu__icon"> <i data-lucide="plus-circle"></i> </div>
+                                <div class="side-menu__title"> Add Employee </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </nav>
         <!-- END: Side Menu -->
@@ -1991,7 +2018,7 @@ License: You must have a valid license purchased only from themeforest(the above
         </div> --}}
     <!-- END: Dark Mode Switcher-->
 
-    
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -2001,7 +2028,7 @@ License: You must have a valid license purchased only from themeforest(the above
     <!-- BEGIN: JS Assets-->
     <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=["your-google-map-api"]&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=[" your-google-map-api"]&libraries=places"></script>
     {{-- <script src="{{ asset('js/app.js') }}"></script> --}}
     <script src="{{ asset('js/app.js') }}"></script>
     <script>
