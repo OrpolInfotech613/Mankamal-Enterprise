@@ -16,6 +16,18 @@ class ProductController extends Controller
         $products = Product::all();
         return view('products.index', compact('products'));
     }
+
+    public function APIindex(Request $request)
+    {
+        $query = Product::query();
+        
+        if ($request->has('name') && !empty($request->name)) {
+            $query->where('product_name', 'like', '%' . $request->name . '%');
+        }
+
+        $products = $query->get();
+        return response()->json($products);
+    }
     
     /**
      * Show the form for creating a new resource.

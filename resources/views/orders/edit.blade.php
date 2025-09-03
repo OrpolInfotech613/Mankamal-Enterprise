@@ -13,13 +13,13 @@
             <div class="col-span-12 md:col-span-6">
                 <label for="dealer_name" class="block text-sm font-medium text-gray-700 mb-1">Dealer Name <span
                         class="text-red-500">*</span></label>
-                <select id="dealer_id" name="dealer_id" required 
+                <select id="dealer_id" name="dealer_id" required
                     class="form-control @error('dealer_id') is-invalid @enderror"
                     {{ old('dealer_id', $record->dealer_id ?? '') ? '' : 'data-placeholder="true"' }}>
                     <option value="">Select a Dealer</option>
                     @forelse($dealers ?? [] as $dealer)
                         <option value="{{ $dealer->id }}"
-                            {{ (isset($order) && $order->dealer_id == $dealer->id) ? 'selected' : '' }}
+                            {{ isset($order) && $order->dealer_id == $dealer->id ? 'selected' : '' }}
                             {{ old('dealer_id', $record->dealer_id ?? '') == $dealer->id ? 'selected' : '' }}>
                             {{ $dealer->name }}
                         </option>
@@ -46,14 +46,14 @@
                     value="{{ old('product_name', $order->product_name) }}" required placeholder="Product Name"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div> --}}
-             <!-- Product Search -->
+            <!-- Product Search -->
             <div class="col-span-12 md:col-span-6">
                 <label for="product_search" class="form-label w-full flex flex-col sm:flex-row">
                     Product Name<span style="color: red;margin-left: 3px;"> *</span>
                 </label>
                 <div class="product-search-container" style="position: relative;">
                     <input id="product_search" type="text" name="product_search" class="form-control field-new"
-                        placeholder="Type to search products..." autocomplete="off" required>
+                        placeholder="Type to search products..." autocomplete="off" required value="{{ $order->product->product_name }}">
                     <input type="hidden" id="product_id" name="product_id" required>
                     <div id="product_dropdown" class="product-dropdown" style="display: none;">
                         <div class="dropdown-content"></div>
@@ -61,29 +61,43 @@
                 </div>
             </div>
 
-            <!-- Production Step -->
+            <!-- Production Steps -->
             <div class="col-span-12 md:col-span-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Production Step</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @foreach ($departments as $department)
-                        @php
-                            // Find the order item for this department
-                            $orderItem = $order->Orderstep->firstWhere('d_id', $department->id);
-                            $orderItemId = $orderItem ? $orderItem->id : null;
-                        @endphp
-
-                        <label class="flex items-center space-x-2">
-                            <!-- Single hidden input per department -->
-                            <input type="hidden" name="orderitemId[{{ $department->id }}]" value="{{ $orderItemId }}">
-
-                            <input type="checkbox" name="production_step[]" value="{{ $department->id }}"
-                                class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
-                                {{ in_array($department->id, old('production_step', $order->production_step ?? [])) ? 'checked' : '' }}>
-                            <span>{{ $department->name }}</span>
-                        </label>
+                <label for="production_step" class="block text-sm font-medium text-gray-700 mb-1">Production Step</label>
+                <div class="flex flex-col md:flex-row gap-4">
+                    @foreach ($steps as $stepOrder => $processingSteps)
+                        <div class="mb-4">
+                            @if ($processingSteps->count() > 1)
+                                {{-- Multiple departments in same step_order → Radio buttons --}}
+                                @foreach ($processingSteps as $step)
+                                    <label class="flex items-center space-x-2">
+                                        <input type="radio" name="production_step[{{ $stepOrder }}]"
+                                            value="{{ $step->department->id }}"
+                                            {{ is_array(old('production_step', $order->production_step ?? [])) &&
+                                            in_array($step->department->id, old('production_step', $order->production_step ?? []))
+                                                ? 'checked'
+                                                : '' }}
+                                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2">
+                                        <span>{{ $step->department->name ?? 'Unknown Department' }}</span>
+                                    </label>
+                                @endforeach
+                            @else
+                                @php $step = $processingSteps->first(); @endphp
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" name="production_step[]" value="{{ $step->department->id }}"
+                                        {{ is_array(old('production_step', $order->production_step ?? [])) &&
+                                        in_array($step->department->id, old('production_step', $order->production_step ?? []))
+                                            ? 'checked'
+                                            : '' }}
+                                        class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-1">
+                                    <span>{{ $step->department->name ?? 'Unknown Department' }}</span>
+                                </label>
+                            @endif
+                        </div>
                     @endforeach
                 </div>
             </div>
+
 
             <!-- Price -->
             <div class="col-span-12 md:col-span-6">
@@ -116,7 +130,8 @@
                 <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Color</label>
                 <div class="flex items-center">
                     <input type="text" id="color" name="color" value="{{ old('color', $order->color) }}"
-                        placeholder="Color" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        placeholder="Color"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
 
@@ -149,7 +164,8 @@
                 <button type="submit" class="btn btn-success text-dark transition duration-200 flex items-center">
                     <i class="fas fa-save mr-2"></i> Update Order
                 </button>
-                <a href="{{ route('orders.index') }}" class="ml-2 btn btn-danger text-white hover:btn-danger-600 transition duration-200 flex items-center">
+                <a href="{{ route('orders.index') }}"
+                    class="ml-2 btn btn-danger text-white hover:btn-danger-600 transition duration-200 flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Orders
                 </a>
             </div>
@@ -217,250 +233,276 @@
     </style>
 @endpush
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const productSearch = document.getElementById('product_search');
-        const productId = document.getElementById('product_id');
-        const dropdown = document.getElementById('product_dropdown');
-        const dropdownContent = dropdown.querySelector('.dropdown-content');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productSearch = document.getElementById('product_search');
+            const productId = document.getElementById('product_id');
+            const dropdown = document.getElementById('product_dropdown');
+            const dropdownContent = dropdown.querySelector('.dropdown-content');
 
-        let currentProducts = [];
-        let currentIndex = -1;
-        let searchTimeout;
-        let isSelecting = false;
+            let currentProducts = [];
+            let currentIndex = -1;
+            let searchTimeout;
+            let isSelecting = false;
 
-        function setupEnterNavigation() {
-            let currentFieldIndex = 0;
+            function setupEnterNavigation() {
+                let currentFieldIndex = 0;
 
-            const formFields = [
-                { selector: '#dealer_id', type: 'select' },
-                { selector: '#customer_name', type: 'input' },
-                { selector: '#product_search', type: 'input' },
-                { selector: '#product_search', type: 'input' },
-                { selector: '#price', type: 'input' },
-                { selector: '#quantity', type: 'input' },
-                { selector: '#shade_number', type: 'input' },
-                { selector: '#color', type: 'input' },
-                { selector: '#delivery_time', type: 'input' },
-            ];
+                const formFields = [{
+                        selector: '#dealer_id',
+                        type: 'select'
+                    },
+                    {
+                        selector: '#customer_name',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#product_search',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#product_search',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#price',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#quantity',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#shade_number',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#color',
+                        type: 'input'
+                    },
+                    {
+                        selector: '#delivery_time',
+                        type: 'input'
+                    },
+                ];
 
-            function focusField(selector) {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.focus();
-                    if (element.tagName === 'SELECT') {
-                        setTimeout(() => {
-                            if (element.size <= 1) {
-                                element.click();
+                function focusField(selector) {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        element.focus();
+                        if (element.tagName === 'SELECT') {
+                            setTimeout(() => {
+                                if (element.size <= 1) {
+                                    element.click();
+                                }
+                            }, 100);
+                        }
+                    }
+                }
+
+                function handleFormFieldNavigation(e, fieldIndex) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+
+                        if (fieldIndex < formFields.length - 1) {
+                            currentFieldIndex = fieldIndex + 1;
+                            focusField(formFields[currentFieldIndex].selector);
+                        } else {
+                            const submitButton = document.querySelector('button[type="submit"]');
+                            if (submitButton) {
+                                submitButton.focus();
                             }
-                        }, 100);
+                        }
                     }
                 }
+
+                formFields.forEach((field, index) => {
+                    const element = document.querySelector(field.selector);
+                    if (element) {
+                        element.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter') {
+                                handleFormFieldNavigation(e, index);
+                            }
+                        });
+                    }
+                });
+
+                setTimeout(() => {
+                    focusField(formFields[0].selector);
+                }, 500);
             }
 
-            function handleFormFieldNavigation(e, fieldIndex) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
+            setupEnterNavigation();
 
-                    if (fieldIndex < formFields.length - 1) {
-                        currentFieldIndex = fieldIndex + 1;
-                        focusField(formFields[currentFieldIndex].selector);
+            // Search products with debounce
+            productSearch.addEventListener('input', function() {
+                const searchTerm = this.value.trim();
+
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (searchTerm.length >= 2) {
+                        searchProducts(searchTerm);
                     } else {
-                        const submitButton = document.querySelector('button[type="submit"]');
-                        if (submitButton) {
-                            submitButton.focus();
-                        }
+                        hideDropdown();
                     }
-                }
-            }
+                }, 300);
+            });
 
-            formFields.forEach((field, index) => {
-                const element = document.querySelector(field.selector);
-                if (element) {
-                    element.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') {
-                            handleFormFieldNavigation(e, index);
+            // Handle keyboard navigation
+            productSearch.addEventListener('keydown', function(e) {
+                if (dropdown.style.display === 'none') return;
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        navigateDropdown(1);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        navigateDropdown(-1);
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (currentIndex >= 0 && currentProducts[currentIndex]) {
+                            selectProduct(currentProducts[currentIndex]);
                         }
-                    });
+                        break;
+                    case 'Escape':
+                        hideDropdown();
+                        break;
                 }
             });
 
-            setTimeout(() => {
-                focusField(formFields[0].selector);
-            }, 500);
-        }
-
-        setupEnterNavigation();
-
-        // Search products with debounce
-        productSearch.addEventListener('input', function() {
-            const searchTerm = this.value.trim();
-
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (searchTerm.length >= 2) {
-                    searchProducts(searchTerm);
-                } else {
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!productSearch.contains(e.target) && !dropdown.contains(e.target)) {
                     hideDropdown();
                 }
-            }, 300);
-        });
+            });
 
-        // Handle keyboard navigation
-        productSearch.addEventListener('keydown', function(e) {
-            if (dropdown.style.display === 'none') return;
-
-            switch (e.key) {
-                case 'ArrowDown':
+            // Prevent form submission on Enter if dropdown is open
+            productSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && dropdown.style.display !== 'none') {
                     e.preventDefault();
-                    navigateDropdown(1);
-                    break;
-                case 'ArrowUp':
-                    e.preventDefault();
-                    navigateDropdown(-1);
-                    break;
-                case 'Enter':
-                    e.preventDefault();
-                    if (currentIndex >= 0 && currentProducts[currentIndex]) {
-                        selectProduct(currentProducts[currentIndex]);
-                    }
-                    break;
-                case 'Escape':
-                    hideDropdown();
-                    break;
-            }
-        });
+                }
+            });
 
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!productSearch.contains(e.target) && !dropdown.contains(e.target)) {
-                hideDropdown();
-            }
-        });
-
-        // Prevent form submission on Enter if dropdown is open
-        productSearch.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && dropdown.style.display !== 'none') {
-                e.preventDefault();
-            }
-        });
-
-        function searchProducts(searchTerm) {
-            fetch(`{{ route('products.search') }}?q=${encodeURIComponent(searchTerm)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        currentProducts = data.products;
-                        displayProducts(currentProducts);
-                    } else {
+            function searchProducts(searchTerm) {
+                fetch(`{{ route('products.search') }}?q=${encodeURIComponent(searchTerm)}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            currentProducts = data.products;
+                            displayProducts(currentProducts);
+                        } else {
+                            showNoResults();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error searching products:', error);
                         showNoResults();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error searching products:', error);
-                    showNoResults();
-                });
-        }
-
-        function displayProducts(products) {
-            if (products.length === 0) {
-                showNoResults();
-                return;
+                    });
             }
 
-            dropdownContent.innerHTML = '';
-            currentIndex = -1;
+            function displayProducts(products) {
+                if (products.length === 0) {
+                    showNoResults();
+                    return;
+                }
 
-            products.forEach((product, index) => {
-                const item = document.createElement('div');
-                item.className = 'dropdown-item';
-                item.dataset.index = index;
+                dropdownContent.innerHTML = '';
+                currentIndex = -1;
 
-                item.innerHTML = `
+                products.forEach((product, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.dataset.index = index;
+
+                    item.innerHTML = `
                     <div class="product-name">${product.text}</div>
                     `;
 
-                item.addEventListener('click', function() {
-                    selectProduct(product);
+                    item.addEventListener('click', function() {
+                        selectProduct(product);
+                    });
+
+                    dropdownContent.appendChild(item);
                 });
 
-                dropdownContent.appendChild(item);
-            });
-
-            showDropdown();
-        }
-
-        function showNoResults() {
-            dropdownContent.innerHTML = '<div class="no-results">No products found</div>';
-            currentProducts = [];
-            currentIndex = -1;
-            showDropdown();
-        }
-
-        function navigateDropdown(direction) {
-            const items = dropdownContent.querySelectorAll('.dropdown-item');
-            if (items.length === 0) return;
-
-            // Remove current highlight
-            if (currentIndex >= 0) {
-                items[currentIndex].classList.remove('highlighted');
+                showDropdown();
             }
 
-            // Calculate new index
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = items.length - 1;
-            if (currentIndex >= items.length) currentIndex = 0;
-
-            // Add highlight to new item
-            items[currentIndex].classList.add('highlighted');
-
-            // Scroll into view
-            items[currentIndex].scrollIntoView({
-                block: 'nearest',
-                behavior: 'smooth'
-            });
-        }
-
-        function selectProduct(product) {
-            isSelecting = true;
-
-            productSearch.value = product.text;
-            productId.value = product.id;
-
-
-            hideDropdown();
-
-            setTimeout(() => {
-                isSelecting = false;
-            }, 100);
-        }
-
-        function showDropdown() {
-            dropdown.style.display = 'block';
-        }
-
-        function hideDropdown() {
-            dropdown.style.display = 'none';
-            currentIndex = -1;
-
-            // Clear highlights
-            const items = dropdownContent.querySelectorAll('.dropdown-item');
-            items.forEach(item => item.classList.remove('highlighted'));
-        }
-
-        // Clear product selection if search input is manually cleared
-        productSearch.addEventListener('blur', function() {
-            if (!isSelecting && this.value.trim() === '') {
-                productId.value = '';
+            function showNoResults() {
+                dropdownContent.innerHTML = '<div class="no-results">No products found</div>';
+                currentProducts = [];
+                currentIndex = -1;
+                showDropdown();
             }
+
+            function navigateDropdown(direction) {
+                const items = dropdownContent.querySelectorAll('.dropdown-item');
+                if (items.length === 0) return;
+
+                // Remove current highlight
+                if (currentIndex >= 0) {
+                    items[currentIndex].classList.remove('highlighted');
+                }
+
+                // Calculate new index
+                currentIndex += direction;
+                if (currentIndex < 0) currentIndex = items.length - 1;
+                if (currentIndex >= items.length) currentIndex = 0;
+
+                // Add highlight to new item
+                items[currentIndex].classList.add('highlighted');
+
+                // Scroll into view
+                items[currentIndex].scrollIntoView({
+                    block: 'nearest',
+                    behavior: 'smooth'
+                });
+            }
+
+            function selectProduct(product) {
+                isSelecting = true;
+
+                productSearch.value = product.text;
+                productId.value = product.id;
+
+
+                hideDropdown();
+
+                setTimeout(() => {
+                    isSelecting = false;
+                }, 100);
+            }
+
+            function showDropdown() {
+                dropdown.style.display = 'block';
+            }
+
+            function hideDropdown() {
+                dropdown.style.display = 'none';
+                currentIndex = -1;
+
+                // Clear highlights
+                const items = dropdownContent.querySelectorAll('.dropdown-item');
+                items.forEach(item => item.classList.remove('highlighted'));
+            }
+
+            // Clear product selection if search input is manually cleared
+            productSearch.addEventListener('blur', function() {
+                if (!isSelecting && this.value.trim() === '') {
+                    productId.value = '';
+                }
+            });
         });
-    });
-</script>
+    </script>
 @endpush

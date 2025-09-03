@@ -16,6 +16,19 @@ class DealerController extends Controller
         return view('dealers.index', compact('dealers'));
     }
 
+    public function APIindex(Request $request)
+    {
+        $query = Dealer::query();
+
+        if ($request->has('name') && !empty($request->name)) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        $dealers = $query->get();
+
+        return response()->json($dealers);
+    }
+
     /**
      * Show the form for creating a new resource.
      */

@@ -129,6 +129,11 @@ class OrderController extends Controller
     public function show(string $id)
     {
         $order = Order::with('Orderstep','dealer','department','product')->find($id);
+        $steps = ProcessingStep::with('department')
+        ->orderBy('step_order')
+        ->get()
+        ->groupBy('step_order');
+
         $departments = Department::all();
         if (!$order) {
             return response()->json([
@@ -136,7 +141,7 @@ class OrderController extends Controller
             ], 404);
         }
         $dealers = Dealer::all(); 
-        return view('orders.show', compact('order', 'departments','dealers'));
+        return view('orders.show', compact('order', 'departments','dealers','steps'));
     }
 
     public function edit($id)
@@ -144,7 +149,12 @@ class OrderController extends Controller
         $departments = Department::all();
         $order = Order::with('Orderstep','dealer','product')->findOrFail($id);
         $dealers = Dealer::all();
-        return view('orders.edit', compact('order', 'departments','dealers'));
+          $steps = ProcessingStep::with('department')
+        ->orderBy('step_order')
+        ->get()
+        ->groupBy('step_order');
+
+        return view('orders.edit', compact('order', 'departments','dealers','steps'));
     }
 
 
