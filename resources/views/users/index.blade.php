@@ -60,75 +60,83 @@
 @push('scripts')
 <script>
     let page = 1;
-        let loading = false;
-        let currentSearch = '';
+    let loading = false;
+    let currentSearch = '{{ request('search') }}';
+    let hasMore = true;
 
-        const scrollContainer = document.getElementById('scrollable-table');
-        const userData = document.getElementById('user-data');
-        const loadingIndicator = document.getElementById('loading');
-        const searchInput = document.getElementById('search-user');
-        let searchTimer;
+    const scrollContainer = document.getElementById('scrollable-table');
+    const userData = document.getElementById('user-data');
+    const loadingIndicator = document.getElementById('loading');
+    const searchInput = document.getElementById('search-user');
+    let searchTimer;
 
-        // Search on keyup with debounce
-        searchInput.addEventListener('keyup', function () {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(() => {
-                currentSearch = searchInput.value.trim();
-                page = 1;
-                loadMoreData(page, false);
-            }, 300);
-        });
+    // Debounced search
+    searchInput.addEventListener('keyup', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            currentSearch = searchInput.value.trim();
+            page = 1;
+            hasMore = true;
+            loadMoreData(page, false);
+        }, 300);
+    });
 
-        // Infinite scroll event
-        scrollContainer.addEventListener('scroll', function () {
-            const scrollBottom = scrollContainer.scrollTop + scrollContainer.clientHeight;
-            const scrollHeight = scrollContainer.scrollHeight;
+    // Infinite scroll
+    scrollContainer.addEventListener('scroll', function () {
+        const scrollBottom = scrollContainer.scrollTop + scrollContainer.clientHeight;
+        const scrollHeight = scrollContainer.scrollHeight;
 
-            if (scrollBottom >= scrollHeight - 100 && !loading) {
-                page++;
-                loadMoreData(page, true);
-            }
-        });
-
-        // Load data (append or replace)
-        function loadMoreData(pageToLoad, append = false) {
-            loading = true;
-            loadingIndicator.style.display = 'block';
-
-            // Build fetch URL with params: page, search, branch_id
-            let url = new URL(window.location.href);
-            url.searchParams.set('page', pageToLoad);
-
-            if (currentSearch) {
-                url.searchParams.set('search', currentSearch);
-            } else {
-                url.searchParams.delete('search');
-            }
-
-            fetch(url.toString(), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.text())
-            .then(data => {
-                if (data.trim().length == 0) {
-                    loadingIndicator.innerHTML = '';
-                    return;
-                }
-
-                if (append) {
-                    userData.insertAdjacentHTML('beforeend', data);
-                } else {
-                    userData.innerHTML = data;
-                }
-
-                loadingIndicator.style.display = 'none';
-                loading = false;
-            })
-            .catch(error => {
-                console.error("Error fetching companies:", error);
-                loadingIndicator.style.display = 'none';
-                loading = false;
-            });
+        if (scrollBottom >= scrollHeight - 100 && !loading && hasMore) {
+            page++;
+            loadMoreData(page, true);
         }
+    });
+
+    // Load data function
+    function loadMoreData(pageToLoad, append = false) {
+        loading = true;
+        loadingIndicator.style.display = 'block';
+
+        let url = new URL(window.location.href);
+        url.searchParams.set('page', pageToLoad);
+        if (currentSearch) {
+            url.searchParams.set('search', currentSearch);
+        } else {
+            url.searchParams.delete('search');
+        }
+
+        fetch(url.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(data => {
+            const trimmed = data.trim();
+
+            if (!trimmed) {
+                hasMore = false;
+                if (append) {
+                    loadingIndicator.innerHTML = '';
+                } else {
+                    userData.innerHTML = '<tr><td colspan="5" style="text-align:center;">No users found.</td></tr>';
+                }
+                return;
+            }
+
+            if (append) {
+                userData.insertAdjacentHTML('beforeend', data);
+            } else {
+                userData.innerHTML = data;
+                scrollContainer.scrollTop = 0; // Reset scroll to top
+            }
+
+            loadingIndicator.style.display = 'none';
+            loading = false;
+        })
+        .catch(error => {
+            console.error("Error loading users:", error);
+            loadingIndicator.style.display = 'none';
+            loading = false;
+        });
+    }
 </script>
 @endpush
