@@ -11,9 +11,20 @@ use Illuminate\Support\Facades\Storage;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::all();
+        $query = Employee::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $employees = $query->paginate(15);
+
+        if ($request->ajax()) {
+            return view( 'employees.rows', compact('employees'))->render();
+        }
+
         return view('employees.index', compact('employees'));
     }
 
@@ -75,7 +86,7 @@ class EmployeeController extends Controller
             $decoded = json_decode($data['documents'], true);
             $data['documents'] = $decoded ?? [];
         }
-        
+
         $validator = \Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email,' . $employee->id,
@@ -92,7 +103,7 @@ class EmployeeController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-        
+
         $employee->update($data);
 
         return redirect()
