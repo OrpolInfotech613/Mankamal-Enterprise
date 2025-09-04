@@ -88,7 +88,7 @@
                             <td>{{ $order->quantity }}</td>
                             <td>{{ $order->shade_number }}</td>
                             <td>{{ $order->color }}</td>
-                            <td>{{ $order->delivery_time }}</td>
+                            <td>{{ optional($order->delivery_time)->format('Y-m-d') }}</td>
                             <td>
                                 <select class="form-select form-select-sm status-select" data-order-id="{{ $order->id }}" onchange="updateOrderStatus(this)">
                                     <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>

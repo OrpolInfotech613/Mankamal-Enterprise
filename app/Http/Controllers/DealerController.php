@@ -115,4 +115,26 @@ class DealerController extends Controller
         return redirect()->route('dealers.index')
             ->with('success', 'Dealer deleted successfully!');
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        $dealers = Dealer::where('name', 'LIKE', "%{$query}%")
+            ->select('id', 'name')
+            ->limit(10)
+            ->get();
+
+        $results = $dealers->map(function ($dealer) {
+            return [
+                'id' => $dealer->id,
+                'text' => $dealer->name,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'dealers' => $results
+        ]);
+    }
 }

@@ -27,6 +27,7 @@ Route::group(['middleware' => 'auth', 'check.remember'], function () {
     Route::resource('users', UserController::class);
     Route::resource('processing-steps', ProcessingStepController::class);
     Route::resource('orders', OrderController::class);
+    Route::get('/dealers/search', [DealerController::class, 'search'])->name('dealers.search');
     Route::resource('dealers', DealerController::class);
     Route::resource('employees', EmployeeController::class);
 

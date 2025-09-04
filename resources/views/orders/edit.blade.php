@@ -11,22 +11,19 @@
 
             <!-- Dealer Name -->
             <div class="col-span-12 md:col-span-6">
-                <label for="dealer_name" class="block text-sm font-medium text-gray-700 mb-1">Dealer Name <span
-                        class="text-red-500">*</span></label>
-                <select id="dealer_id" name="dealer_id" required
-                    class="form-control @error('dealer_id') is-invalid @enderror"
-                    {{ old('dealer_id', $record->dealer_id ?? '') ? '' : 'data-placeholder="true"' }}>
-                    <option value="">Select a Dealer</option>
-                    @forelse($dealers ?? [] as $dealer)
-                        <option value="{{ $dealer->id }}"
-                            {{ isset($order) && $order->dealer_id == $dealer->id ? 'selected' : '' }}
-                            {{ old('dealer_id', $record->dealer_id ?? '') == $dealer->id ? 'selected' : '' }}>
-                            {{ $dealer->name }}
-                        </option>
-                    @empty
-                        <option value="" disabled>No dealers available</option>
-                    @endforelse
-                </select>
+                <label for="dealer_name" class="block text-sm font-medium text-gray-700 mb-1">
+                    Dealer Name <span class="text-red-500">*</span>
+                </label>
+                <div class="dealer-search-container" style="position: relative;">
+                    <input id="dealer_search" type="text" name="dealer_search" class="form-control field-new"
+                        placeholder="Type to search dealers..." autocomplete="off" required
+                        value="{{ old('dealer_search', $order->dealer->name ?? '') }}">
+                    <input type="hidden" id="dealer_id" name="dealer_id"
+                        value="{{ old('dealer_id', $order->dealer_id) }}" required>
+                    <div id="dealer_dropdown" class="dealer-dropdown" style="display: none;">
+                        <div class="dropdown-content"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Customer Name -->
@@ -43,7 +40,7 @@
                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-1">Product Name <span
                         class="text-red-500">*</span></label>
                 <input type="text" id="product_name" name="product_name"
-                    value="{{ old('product_name', $order->product_name) }}" required placeholder="Product Name"
+                    value="{{ old('$order->product->product_name', $order->product->product_name) }}" required placeholder="Product Name"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div> --}}
             <!-- Product Search -->
@@ -53,8 +50,8 @@
                 </label>
                 <div class="product-search-container" style="position: relative;">
                     <input id="product_search" type="text" name="product_search" class="form-control field-new"
-                        placeholder="Type to search products..." autocomplete="off" required value="{{ $order->product->product_name }}">
-                    <input type="hidden" id="product_id" name="product_id" required>
+                        placeholder="Type to search products..." autocomplete="off" required value="{{ $order->product->product_name ?? '' }}">
+                    <input type="hidden" id="product_id" name="product_id" value="{{ $order->product_id ?? '' }}" required>
                     <div id="product_dropdown" class="product-dropdown" style="display: none;">
                         <div class="dropdown-content"></div>
                     </div>
@@ -133,14 +130,13 @@
                         placeholder="Color"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-            </div>
-
+            </div>            
             <!-- Delivery Time -->
             <div class="col-span-12 md:col-span-6">
                 <label for="delivery_time" class="block text-sm font-medium text-gray-700 mb-1">Delivery Time <span
                         class="text-red-500">*</span></label>
                 <input type="date" id="delivery_time" name="delivery_time"
-                    value="{{ old('delivery_time', $order->delivery_time) }}" required placeholder="Delivery Time"
+                    value="{{ optional($order->delivery_time)->format('Y-m-d') }}" required placeholder="Delivery Time"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
@@ -230,6 +226,41 @@
             color: #666;
             font-style: italic;
         }
+        .dealer-search-container {
+            position: relative;
+        }
+
+        .dealer-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dealer-dropdown .dropdown-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dealer-dropdown .dropdown-item:hover,
+        .dealer-dropdown .dropdown-item.highlighted {
+            background-color: #f5f5f5;
+        }
+
+        .dealer-dropdown .no-results {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 @endpush
 @push('scripts')
@@ -239,6 +270,16 @@
             const productId = document.getElementById('product_id');
             const dropdown = document.getElementById('product_dropdown');
             const dropdownContent = dropdown.querySelector('.dropdown-content');
+
+            const dealerSearch = document.getElementById('dealer_search');
+            const dealerId = document.getElementById('dealer_id');
+            const dealerDropdown = document.getElementById('dealer_dropdown');
+            const dealerDropdownContent = dealerDropdown.querySelector('.dropdown-content');
+
+            let dealerResults = [];
+            let dealerIndex = -1;
+            let dealerSearchTimeout;
+            let dealerIsSelecting = false;
 
             let currentProducts = [];
             let currentIndex = -1;
@@ -503,6 +544,151 @@
                     productId.value = '';
                 }
             });
+            
+            dealerSearch.addEventListener('input', function () {
+            const query = this.value.trim();
+
+            clearTimeout(dealerSearchTimeout);
+            dealerSearchTimeout = setTimeout(() => {
+                if (query.length >= 2) {
+                    searchDealers(query);
+                } else {
+                    hideDealerDropdown();
+                }
+            }, 300);
         });
+
+        dealerSearch.addEventListener('keydown', function (e) {
+            if (dealerDropdown.style.display === 'none') return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    navigateDealerDropdown(1);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    navigateDealerDropdown(-1);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (dealerIndex >= 0 && dealerResults[dealerIndex]) {
+                        selectDealer(dealerResults[dealerIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    hideDealerDropdown();
+                    break;
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!dealerSearch.contains(e.target) && !dealerDropdown.contains(e.target)) {
+                hideDealerDropdown();
+            }
+        });
+
+        function searchDealers(query) {
+            fetch(`{{ route('dealers.search') }}?q=${encodeURIComponent(query)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    dealerResults = data.dealers;
+                    displayDealers(dealerResults);
+                } else {
+                    showDealerNoResults();
+                }
+            })
+            .catch(error => {
+                console.error('Dealer search error:', error);
+                showDealerNoResults();
+            });
+        }
+
+        function displayDealers(dealers) {
+            dealerDropdownContent.innerHTML = '';
+            dealerIndex = -1;
+
+            if (dealers.length === 0) {
+                showDealerNoResults();
+                return;
+            }
+
+            dealers.forEach((dealer, index) => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.dataset.index = index;
+                item.innerHTML = dealer.text;
+
+                item.addEventListener('click', function () {
+                    selectDealer(dealer);
+                });
+
+                dealerDropdownContent.appendChild(item);
+            });
+
+            showDealerDropdown();
+        }
+
+        function selectDealer(dealer) {
+            dealerIsSelecting = true;
+            dealerSearch.value = dealer.text;
+            dealerId.value = dealer.id;
+            hideDealerDropdown();
+
+            setTimeout(() => {
+                dealerIsSelecting = false;
+            }, 100);
+        }
+
+        function navigateDealerDropdown(direction) {
+            const items = dealerDropdownContent.querySelectorAll('.dropdown-item');
+            if (items.length === 0) return;
+
+            if (dealerIndex >= 0) {
+                items[dealerIndex].classList.remove('highlighted');
+            }
+
+            dealerIndex += direction;
+            if (dealerIndex < 0) dealerIndex = items.length - 1;
+            if (dealerIndex >= items.length) dealerIndex = 0;
+
+            items[dealerIndex].classList.add('highlighted');
+            items[dealerIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        function showDealerNoResults() {
+            dealerDropdownContent.innerHTML = '<div class="no-results">No dealers found</div>';
+            dealerResults = [];
+            dealerIndex = -1;
+            showDealerDropdown();
+        }
+
+        function showDealerDropdown() {
+            dealerDropdown.style.display = 'block';
+        }
+
+        function hideDealerDropdown() {
+            dealerDropdown.style.display = 'none';
+            dealerIndex = -1;
+
+            const items = dealerDropdownContent.querySelectorAll('.dropdown-item');
+            items.forEach(item => item.classList.remove('highlighted'));
+        }
+
+        dealerSearch.addEventListener('blur', function () {
+            if (!dealerIsSelecting && this.value.trim() === '') {
+                dealerId.value = '';
+            }
+        });
+    });
+
+        
     </script>
 @endpush

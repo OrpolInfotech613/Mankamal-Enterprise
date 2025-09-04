@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BranchUsers;
 use App\Models\Role;
 use App\Models\User;
 use App\Traits\BranchAuthTrait;
@@ -16,11 +15,23 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = 20;
+        $search = $request->input('search');
 
-        $users = User::with(['role_data'])->get();
-    
+        $query = User::with(['role_data']); 
+
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        $users = $query->paginate($perPage); 
+
+        if ($request->ajax()) {
+            return view('users.rows', compact('users'))->render();
+        }
+
         return view('users.index', compact('users'));
     }
 
@@ -92,9 +103,7 @@ class UserController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:users',
-                'mobile' => 'nullable|string|max:15',
                 'role_id' => 'required|integer',
-                'dob' => 'nullable|date',
                 'password' => 'required|nullable|string|min:6',
             ]);
         } catch (Exception $e) {
@@ -115,11 +124,8 @@ class UserController extends Controller
         $userData = [
             'name' => $request->name,
             'email' => $request->email,
-            'mobile' => $request->mobile,
             'role_id' => $request->role_id,
-            'dob' => $request->dob,
             'password' => Hash::make($request->password),
-            'is_active' => true,
             'email_verified_at' => now(),
         ];
 
@@ -164,9 +170,7 @@ class UserController extends Controller
             $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|nullable|email|max:255',
-                'mobile' => 'nullable|string|max:15',
                 'role_id' => 'required|integer',
-                'dob' => 'nullable|date',
                 'password' => 'nullable|string|min:6',
             ]);
 

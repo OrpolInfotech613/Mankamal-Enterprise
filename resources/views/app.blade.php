@@ -27,6 +27,9 @@ License: You must have a valid license purchased only from themeforest(the above
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- Font Awesome CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
 
 
 
@@ -1111,7 +1114,7 @@ License: You must have a valid license purchased only from themeforest(the above
                 <li>
                     <a href="javascript:;"
                         class="side-menu {{ $orderMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
-                        <div class="side-menu__icon"> <i data-lucide="user"></i> </div>
+                        <div class="side-menu__icon"> <i data-lucide="shopping-cart"></i> </div>
                         <div class="side-menu__title">
                             Orders
                             <i data-lucide="chevron-down"
@@ -1123,14 +1126,14 @@ License: You must have a valid license purchased only from themeforest(the above
                         <li>
                             <a href="{{ route('orders.index') }}"
                                 class="side-menu {{ request()->routeIs('orders.*') ? 'side-menu--active' : '' }}">
-                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__icon"> <i data-lucide="list-checks"></i> </div>
                                 <div class="side-menu__title"> Orders </div>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('processing-steps.index') }}"
                                 class="side-menu {{ request()->routeIs('processing-steps.*') ? 'side-menu--active' : '' }}">
-                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__icon"> <i data-lucide="factory"></i> </div>
                                 <div class="side-menu__title"> Production Steps </div>
                             </a>
                         </li>
@@ -1142,7 +1145,7 @@ License: You must have a valid license purchased only from themeforest(the above
                 <li>
                     <a href="javascript:;"
                         class="side-menu {{ $productMenuOpen ? 'side-menu--active side-menu--opensss' : '' }}">
-                        <div class="side-menu__icon"> <i data-lucide="user"></i> </div>
+                        <div class="side-menu__icon"> <i data-lucide="package"></i> </div>
                         <div class="side-menu__title">
                             Product
                             <i data-lucide="chevron-down"
@@ -1154,14 +1157,14 @@ License: You must have a valid license purchased only from themeforest(the above
                         <li>
                             <a href="{{ route('products.index') }}"
                                 class="side-menu {{ request()->routeIs('products.*') ? 'side-menu--active' : '' }}">
-                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__icon"> <i data-lucide="boxes"></i> </div>
                                 <div class="side-menu__title"> Products </div>
                             </a>
                         </li>
                         <li>
                             <a href="{{ route('types.index') }}"
                                 class="side-menu {{ request()->routeIs('types.*') ? 'side-menu--active' : '' }}">
-                                <div class="side-menu__icon"> <i data-lucide="activity"></i> </div>
+                                <div class="side-menu__icon"> <i data-lucide="shapes"></i> </div>
                                 <div class="side-menu__title"> Types </div>
                             </a>
                         </li>
