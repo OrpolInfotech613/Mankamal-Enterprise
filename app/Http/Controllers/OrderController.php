@@ -32,12 +32,21 @@ class OrderController extends Controller
         ]);
 
         // Apply filters
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('search')) {
+            $query->where(function($q) {
+                $q->where('customer_name', 'like', '%' . request('search') . '%')
+                //   ->orWhere('name', 'like', '%' . request('search') . '%')
+                  ->orWhereHas('dealer', function($productQuery) {
+                      $productQuery->where('name', 'like', '%' . request('search') . '%');
+                  })
+                  ->orWhereHas('product', function($productQuery) {
+                      $productQuery->where('product_name', 'like', '%' . request('search') . '%');
+                  });
+            });
         }
 
-        if ($request->has('dealer_name')) {
-            $query->where('dealer_name', 'like', '%' . $request->dealer_name . '%');
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
         }
 
         if ($request->has('customer_name')) {
@@ -46,7 +55,7 @@ class OrderController extends Controller
 
         // Pagination
         $perPage = $request->get('per_page', 15);
-        $orders = $query->paginate($perPage);
+        $orders = $query->orderBy('id', 'desc')->paginate($perPage);
 
         $departmentIds = collect($orders->items())
             ->pluck('production_step')
@@ -57,6 +66,10 @@ class OrderController extends Controller
 
         // Fetch department names
         $departments = Department::whereIn('id', $departmentIds)->pluck('name', 'id');
+
+        if ($request->ajax()) {
+            return view('orders.rows', compact('orders', 'departments'))->render();
+        }
 
         return view('orders.index', compact('orders', 'departments'));
     }

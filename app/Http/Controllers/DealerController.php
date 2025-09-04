@@ -10,9 +10,19 @@ class DealerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $dealers = Dealer::latest()->paginate(10); // adjust pagination if needed
+        $query = Dealer::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $dealers = $query->orderBy('id', 'desc')->paginate(15);
+
+        if ($request->ajax()) {
+            return view('dealers.rows', compact('dealers'))->render();
+        }
         return view('dealers.index', compact('dealers'));
     }
 
@@ -34,7 +44,7 @@ class DealerController extends Controller
      */
     public function create()
     {
-         return view('dealers.create');
+        return view('dealers.create');
     }
 
     /**
@@ -43,18 +53,18 @@ class DealerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:dealers,email',
-            'phone_no'   => 'required|string|max:20',
-            'address'    => 'required|string|max:500',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:dealers,email',
+            'phone_no' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
             'gst_number' => 'nullable|string|max:50',
-            'notes'      => 'nullable|string',
+            'notes' => 'nullable|string',
         ]);
 
         Dealer::create($validated);
 
         return redirect()->route('dealers.index')
-                         ->with('success', 'Dealer created successfully!');
+            ->with('success', 'Dealer created successfully!');
     }
 
     /**
@@ -71,7 +81,7 @@ class DealerController extends Controller
      */
     public function edit(Dealer $dealer)
     {
-                return view('dealers.edit', compact('dealer'));
+        return view('dealers.edit', compact('dealer'));
 
     }
 
@@ -81,18 +91,18 @@ class DealerController extends Controller
     public function update(Request $request, Dealer $dealer)
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:dealers,email,' . $dealer->id,
-            'phone_no'   => 'required|string|max:20',
-            'address'    => 'required|string|max:500',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:dealers,email,' . $dealer->id,
+            'phone_no' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
             'gst_number' => 'nullable|string|max:50',
-            'notes'      => 'nullable|string',
+            'notes' => 'nullable|string',
         ]);
 
         $dealer->update($validated);
 
         return redirect()->route('dealers.index')
-                         ->with('success', 'Dealer updated successfully!');
+            ->with('success', 'Dealer updated successfully!');
     }
 
     /**
@@ -103,7 +113,7 @@ class DealerController extends Controller
         $dealer->delete();
 
         return redirect()->route('dealers.index')
-                         ->with('success', 'Dealer deleted successfully!');
+            ->with('success', 'Dealer deleted successfully!');
     }
 
     public function search(Request $request)

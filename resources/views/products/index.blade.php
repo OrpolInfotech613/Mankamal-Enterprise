@@ -9,46 +9,114 @@
         <div class="grid grid-cols-12 gap-6 mt-5 grid-updated">
             <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2">
                 <a href="{{ route('products.create') }}" class="btn btn-primary shadow-md mr-2 btn-hover">Add New Product</a>
+                <div class="input-form ml-auto">
+                    <form method="GET" action="{{ route('products.index') }}" class="flex gap-2">
+                        <input type="text" name="search" id="search" placeholder="Search by name"
+                        value="{{ request('search') }}" class="form-control flex-1">
+                        <button type="submit" class="btn btn-primary shadow-md btn-hover">Search</button>
+                    </form>
+                </div>
             </div>
-
-            <table id="DataTable" class="display table table-bordered intro-y col-span-12">
-                <thead>
-                    <tr class="bg-primary font-bold text-white">
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Image</th>
-                        <th style="text-align: left;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($products as $product)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $product->product_name }}</td>
-                            <td>{{ $product->type->name ?? '-' }}</td>
-                            <td>
-                                @if($product->image)
-                                    <img src="{{ asset($product->image) }}" alt="Image" width="70" height="70" class="rounded">
-                                @else
-                                    <span class="text-gray-500">No Image</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="flex gap-2">
-                                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-primary mr-1 mb-2"><i data-lucide="edit" class="w-4 h-4"></i></a>
-                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this product?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger mr-1 mb-2"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                                    </form>
-                                </div>
-                            </td>
+        </div>
+        <!-- BEGIN: Products Layout -->
+        <div class="intro-y col-span-12 overflow-auto">
+            <div id="scrollable-table"
+                style="max-height: calc(100vh - 200px); overflow-y: auto; border: 1px solid #ddd;" class="mt-5">
+                <table id="DataTable" class="display table table-bordered w-full">
+                    <thead style="position: sticky; top: 0; z-index: 10;">
+                        <tr class="bg-primary font-bold text-white">
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Image</th>
+                            <th style="text-align: left;">Actions</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="body">
+                        @include('products.rows', ['page' => 1])
+                    </tbody>
+                </table>
+            </div>
+            <div id="loading" style="display: none; text-align: center; padding: 10px;">
+                <p>Loading more...</p>
+            </div>
+            <!-- END: Products Layout -->
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        let page = 1;
+        let loading = false;
+        let currentSearch = '';
+
+        const scrollContainer = document.getElementById('scrollable-table');
+        const productData = document.getElementById('body');
+        const loadingIndicator = document.getElementById('loading');
+        const searchInput = document.getElementById('search');
+        let searchTimer;
+
+        // Search on keyup with debounce
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                currentSearch = searchInput.value.trim();
+                page = 1;
+                loadMoreData(page, false);
+            }, 300);
+        });
+
+        // Infinite scroll event
+        scrollContainer.addEventListener('scroll', function () {
+            const scrollBottom = scrollContainer.scrollTop + scrollContainer.clientHeight;
+            const scrollHeight = scrollContainer.scrollHeight;
+
+            if (scrollBottom >= scrollHeight - 100 && !loading) {
+                page++;
+                loadMoreData(page, true);
+            }
+        });
+
+        // Load data (append or replace)
+        function loadMoreData(pageToLoad, append = false) {
+            loading = true;
+            loadingIndicator.style.display = 'block';
+
+            // Build fetch URL with params: page, search
+            let url = new URL(window.location.href);
+            url.searchParams.set('page', pageToLoad);
+
+            if (currentSearch) {
+                url.searchParams.set('search', currentSearch);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            fetch(url.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.trim().length == 0) {
+                    loadingIndicator.innerHTML = '';
+                    return;
+                }
+
+                if (append) {
+                    productData.insertAdjacentHTML('beforeend', data);
+                } else {
+                    productData.innerHTML = data;
+                }
+
+                loadingIndicator.style.display = 'none';
+                loading = false;
+            })
+            .catch(error => {
+                console.error("Error fetching products:", error);
+                loadingIndicator.style.display = 'none';
+                loading = false;
+            });
+        }
+    </script>
+@endpush
