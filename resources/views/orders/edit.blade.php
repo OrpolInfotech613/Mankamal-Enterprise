@@ -40,7 +40,7 @@
                 <label for="product_name" class="block text-sm font-medium text-gray-700 mb-1">Product Name <span
                         class="text-red-500">*</span></label>
                 <input type="text" id="product_name" name="product_name"
-                    value="{{ old('product_name', $order->product_name) }}" required placeholder="Product Name"
+                    value="{{ old('$order->product->product_name', $order->product->product_name) }}" required placeholder="Product Name"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div> --}}
             <!-- Product Search -->
@@ -50,8 +50,8 @@
                 </label>
                 <div class="product-search-container" style="position: relative;">
                     <input id="product_search" type="text" name="product_search" class="form-control field-new"
-                        placeholder="Type to search products..." autocomplete="off" required value="{{ $order->product->product_name }}">
-                    <input type="hidden" id="product_id" name="product_id" required>
+                        placeholder="Type to search products..." autocomplete="off" required value="{{ $order->product->product_name ?? '' }}">
+                    <input type="hidden" id="product_id" name="product_id" value="{{ $order->product_id ?? '' }}" required>
                     <div id="product_dropdown" class="product-dropdown" style="display: none;">
                         <div class="dropdown-content"></div>
                     </div>
@@ -130,14 +130,13 @@
                         placeholder="Color"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
-            </div>
-
+            </div>            
             <!-- Delivery Time -->
             <div class="col-span-12 md:col-span-6">
                 <label for="delivery_time" class="block text-sm font-medium text-gray-700 mb-1">Delivery Time <span
                         class="text-red-500">*</span></label>
                 <input type="date" id="delivery_time" name="delivery_time"
-                    value="{{ old('delivery_time', $order->delivery_time) }}" required placeholder="Delivery Time"
+                    value="{{ optional($order->delivery_time)->format('Y-m-d') }}" required placeholder="Delivery Time"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
