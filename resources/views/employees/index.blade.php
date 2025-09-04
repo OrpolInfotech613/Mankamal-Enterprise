@@ -5,123 +5,134 @@
         <h2 class="intro-y text-lg font-medium mt-10 heading">
             Employee
         </h2>
-        <div class="grid grid-cols-12 gap-6 mt-5 grid-updated ">
+        @if (session('success'))
+            <div id="success-alert" class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 10px; margin-bottom: 10px;">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div id="error-alert" class="alert alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 10px;">
+                {{ session('error') }}
+            </div>
+        @endif
+        <div class="grid grid-cols-12 gap-6 mt-5 grid-updated">
             <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2">
-                <a href="{{ Route('employees.create') }}" class="btn btn-primary shadow-md mr-2 btn-hover">Add New
-                    Employee</a>
+                <a href="{{ Route('employees.create') }}" class="btn btn-primary shadow-md mr-2 btn-hover">Add New Employee</a>
                 <div class="input-form ml-auto">
                     <form method="GET" action="{{ route('employees.index') }}" class="flex gap-2">
-                        <input type="text" name="search" id="search" placeholder="Search by name"
+                        <input type="text" name="search" id="search-employee" placeholder="Search by name"
                             value="{{ request('search') }}" class="form-control flex-1">
                         <button type="submit" class="btn btn-primary shadow-md btn-hover">Search</button>
                     </form>
                 </div>
             </div>
-        </div>
-        <div class="intro-y col-span-12 overflow-auto">
-            <div id="scrollable-table" style="max-height: calc(100vh - 200px); overflow-y: auto; border: 1px solid #ddd;"
-                class="mt-5">
-                <table id="DataTable" class="display table table-bordered w-full">
-                    <thead style="position: sticky; top: 0; z-index: 10;">
-                        <tr class="bg-primary font-bold text-white">
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone No</th>
-                            <th>Salary</th>
-                            <th>DOJ</th>
-                            <th>DOB</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body">
-                        @include('employees.rows', ['page' => 1])
-                    </tbody>
-                </table>
+
+            <!-- BEGIN: Employees Layout -->
+            <!-- DataTable: Add class 'datatable' to your table -->
+            <div class="intro-y col-span-12 ">
+                <div id="scrollable-table" style="max-height: calc(100vh - 200px); overflow-y: auto; border: 1px solid #ddd;">
+                    <table class="table table-bordered w-full" style="border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; z-index: 10;">
+                            <tr class="bg-primary font-bold text-white">
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone No</th>
+                                <th>Salary</th>
+                                <th>DOJ</th>
+                                <th>DOB</th>
+                                <th>Status</th>
+                                <th style="TEXT-ALIGN: left;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employee-data">
+                            @include('employees.rows', ['page' => 1])
+                        </tbody>
+                    </table>
+                </div>
+                <!-- END: Employees Layout -->
+                <div id="loading" style="display: none; text-align: center; padding: 10px;">
+                    <p>Loading more employees...</p>
+                </div>
             </div>
-            <div id="loading" style="display: none; text-align: center; padding: 10px;">
-                <p>Loading more...</p>
-            </div>
+
+            <!-- END: Employees Layout -->
         </div>
     </div>
 @endsection
 @push('scripts')
-   <script>
+<script>
     let page = 1;
     let loading = false;
-    let hasMorePages = true;
     let currentSearch = '';
 
     const scrollContainer = document.getElementById('scrollable-table');
     const loadingIndicator = document.getElementById('loading');
-    const searchInput = document.getElementById('search');
-    const tableBody = document.querySelector('#body');
+    const searchInput = document.getElementById('search-employee');
+    const tableBody = document.querySelector('#employee-data');
+    let searchTimer;
 
-    // 🔍 Live Search
-    searchInput.addEventListener('keyup', function() {
-        currentSearch = this.value;
-        page = 1;
-        hasMorePages = true;
-        tableBody.innerHTML = ''; // reset table
-
-        fetchMoreData(page, true);
+    // Search on keyup with debounce
+    searchInput.addEventListener('keyup', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            currentSearch = searchInput.value.trim();
+            page = 1;
+            loadMoreData(page, false);
+        }, 300);
     });
 
-    // 📜 Infinite Scroll
-    scrollContainer.addEventListener('scroll', function() {
-        if (scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 10 &&
-            !loading && hasMorePages) {
+    // Infinite scroll event
+    scrollContainer.addEventListener('scroll', function () {
+        const scrollBottom = scrollContainer.scrollTop + scrollContainer.clientHeight;
+        const scrollHeight = scrollContainer.scrollHeight;
+
+        if (scrollBottom >= scrollHeight - 100 && !loading) {
             page++;
-            fetchMoreData(page, false);
+            loadMoreData(page, true);
         }
     });
 
-    // 📦 Fetch Data
-    function fetchMoreData(pageNum, replace = false) {
+    // Load data (append or replace)
+    function loadMoreData(pageToLoad, append = false) {
         loading = true;
         loadingIndicator.style.display = 'block';
 
-        const url = new URL("{{ route('employees.index') }}");
-        url.searchParams.set('page', pageNum);
-        if (currentSearch) url.searchParams.set('search', currentSearch);
+        // Build fetch URL with params: page, search
+        let url = new URL(window.location.href);
+        url.searchParams.set('page', pageToLoad);
 
-        fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'text/html'
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                if (!html.trim()) {
-                    hasMorePages = false;
-                    loadingIndicator.innerHTML = '<p>No more data to load.</p>';
-                    return;
-                }
+        if (currentSearch) {
+            url.searchParams.set('search', currentSearch);
+        } else {
+            url.searchParams.delete('search');
+        }
 
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newRows = doc.querySelectorAll('tr');
+        fetch(url.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data.trim().length == 0) {
+                loadingIndicator.innerHTML = '';
+                return;
+            }
 
-                // if (replace) {
-                //     tableBody.innerHTML = ''; // reset on new search
-                // }
+            if (append) {
+                tableBody.insertAdjacentHTML('beforeend', data);
+            } else {
+                tableBody.innerHTML = data;
+            }
 
-                newRows.forEach(row => {
-                    tableBody.appendChild(row);
-                });
-
-                loadingIndicator.style.display = 'none';
-                loading = false;
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                loading = false;
-                hasMorePages = false;
-                loadingIndicator.innerHTML = '<p>Error loading data.</p>';
-            });
+            loadingIndicator.style.display = 'none';
+            loading = false;
+        })
+        .catch(error => {
+            console.error("Error fetching employees:", error);
+            loadingIndicator.style.display = 'none';
+            loading = false;
+        });
     }
 </script>
-
 @endpush

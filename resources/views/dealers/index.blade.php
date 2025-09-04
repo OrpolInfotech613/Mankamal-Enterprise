@@ -25,7 +25,7 @@
                     style="max-height: calc(100vh - 200px); overflow-y: auto; border: 1px solid #ddd;" class="mt-5">
                     <table id="DataTable" class="display table table-bordered w-full">
                         <thead style="position: sticky; top: 0; z-index: 10;">
-                            <tr>
+                            <tr class="bg-primary font-bold text-white">
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Email</th>
@@ -52,77 +52,74 @@
             <script>
                 let page = 1;
                 let loading = false;
-                let hasMorePages = true;
                 let currentSearch = '';
 
                 const scrollContainer = document.getElementById('scrollable-table');
+                const dealerData = document.getElementById('body');
                 const loadingIndicator = document.getElementById('loading');
                 const searchInput = document.getElementById('search');
-                const tableBody = document.querySelector('#body');
+                let searchTimer;
 
-                // 🔍 Live Search
-                searchInput.addEventListener('keyup', function() {
-                    currentSearch = this.value;
-                    page = 1;
-                    hasMorePages = true;
-                    tableBody.innerHTML = ''; // reset table
-
-                    fetchMoreData(page, true);
+                // Search on keyup with debounce
+                searchInput.addEventListener('keyup', function () {
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(() => {
+                        currentSearch = searchInput.value.trim();
+                        page = 1;
+                        loadMoreData(page, false);
+                    }, 300);
                 });
 
-                // 📜 Infinite Scroll
-                scrollContainer.addEventListener('scroll', function() {
-                    if (scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight - 10 &&
-                        !loading && hasMorePages) {
+                // Infinite scroll event
+                scrollContainer.addEventListener('scroll', function () {
+                    const scrollBottom = scrollContainer.scrollTop + scrollContainer.clientHeight;
+                    const scrollHeight = scrollContainer.scrollHeight;
+
+                    if (scrollBottom >= scrollHeight - 100 && !loading) {
                         page++;
-                        fetchMoreData(page, false);
+                        loadMoreData(page, true);
                     }
                 });
 
-                // 📦 Fetch Data
-                function fetchMoreData(pageNum, replace = false) {
+                // Load data (append or replace)
+                function loadMoreData(pageToLoad, append = false) {
                     loading = true;
                     loadingIndicator.style.display = 'block';
 
-                    const url = new URL("{{ route('dealers.index') }}");
-                    url.searchParams.set('page', pageNum);
-                    if (currentSearch) url.searchParams.set('search', currentSearch);
+                    // Build fetch URL with params: page, search, branch_id
+                    let url = new URL(window.location.href);
+                    url.searchParams.set('page', pageToLoad);
 
-                    fetch(url, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'text/html'
-                            }
-                        })
-                        .then(response => response.text())
-                        .then(html => {
-                            if (!html.trim()) {
-                                hasMorePages = false;
-                                loadingIndicator.innerHTML = '<p>No more data to load.</p>';
-                                return;
-                            }
+                    if (currentSearch) {
+                        url.searchParams.set('search', currentSearch);
+                    } else {
+                        url.searchParams.delete('search');
+                    }
 
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            const newRows = doc.querySelectorAll('tr');
+                    fetch(url.toString(), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.trim().length == 0) {
+                            loadingIndicator.innerHTML = '';
+                            return;
+                        }
 
-                            // if (replace) {
-                            //     tableBody.innerHTML = ''; // reset on new search
-                            // }
+                        if (append) {
+                            dealerData.insertAdjacentHTML('beforeend', data);
+                        } else {
+                            dealerData.innerHTML = data;
+                        }
 
-                            newRows.forEach(row => {
-                                tableBody.appendChild(row);
-                            });
-
-                            loadingIndicator.style.display = 'none';
-                            loading = false;
-                        })
-                        .catch(error => {
-                            console.error('Error fetching data:', error);
-                            loading = false;
-                            hasMorePages = false;
-                            loadingIndicator.innerHTML = '<p>Error loading data.</p>';
-                        });
+                        loadingIndicator.style.display = 'none';
+                        loading = false;
+                    })
+                    .catch(error => {
+                        console.error("Error fetching companies:", error);
+                        loadingIndicator.style.display = 'none';
+                        loading = false;
+                    });
                 }
             </script>
         @endpush

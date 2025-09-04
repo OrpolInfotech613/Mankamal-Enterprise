@@ -18,17 +18,14 @@
                     style="display: inline-block;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger mr-1 mb-2"><i data-lucide="view"
-                            class="w-4 h-4"></i></button>
+                    <button type="submit" class="btn btn-danger mr-1 mb-2"><i class="fas fa-trash-alt"></i></button>
                 </form>
 
                 <!-- Edit -->
-                <a href="{{ route('dealers.edit', $dealer->id) }}" class="btn btn-primary mr-1 mb-2"><i
-                        data-lucide="edit" class="w-4 h-4"></i></a>
+                <a href="{{ route('dealers.edit', $dealer->id) }}" class="btn btn-primary mr-1 mb-2"><i class="fas fa-edit text-white"></i></a>
 
                 <!-- View (optional) -->
-                <a href="{{ route('dealers.show', $dealer->id) }}" class="btn btn-success mr-1 mb-2"><i
-                        data-lucide="view" class="w-4 h-4"></i></a>
+                <a href="{{ route('dealers.show', $dealer->id) }}" class="btn btn-success mr-1 mb-2"><i class="fas fa-eye text-white"></i></a>
             </div>
         </td>
     </tr>

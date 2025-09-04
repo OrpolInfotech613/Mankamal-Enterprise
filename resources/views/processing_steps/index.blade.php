@@ -41,7 +41,7 @@
                                     </form>
 
                                     <a href="{{ route('processing-steps.edit', $step->id) }}" class="btn btn-primary mr-1 mb-2">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
+                                        <i class="fas fa-edit text-white"></i>
                                     </a>
                                 </div>
                             </td>

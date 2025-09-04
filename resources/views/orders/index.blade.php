@@ -4,7 +4,7 @@
         .table td {
             border-bottom-width: 1px;
             padding: 0.25rem 0.5rem;
-        }   
+        }
     </style>
 @endpush
 @section('content')
@@ -32,103 +32,172 @@
         <div class="grid grid-cols-12 gap-6 mt-5 grid-updated">
             <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2">
                 <a href="{{ route('orders.create') }}" class="btn btn-primary shadow-md mr-2 btn-hover">Add New Order</a>
+                <div class="input-form ml-auto">
+                    <form method="GET" action="{{ route('orders.index') }}" class="flex gap-2">
+                        <input type="text" name="search" id="search" placeholder="Search by customer, dealer, or product name"
+                        value="{{ request('search') }}" class="form-control flex-1">
+                        <button type="submit" class="btn btn-primary shadow-md btn-hover">Search</button>
+                    </form>
+                </div>
             </div>
-
-            <!-- BEGIN: Orders Layout -->
-            <table id="DataTable" class="display table table-bordered intro-y col-span-12">
-                <thead>
-                    <tr class="bg-primary font-bold text-white">
-                        <th>ID</th>
-                        <th>Dealer Name</th>
-                        <th>Customer Name</th>
-                        <th>Product Name</th>
-                        <th>Production Step</th>
-                        <th>Working</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Shade Number</th>
-                        <th>Color</th>
-                        <th>Delivery Time</th>
-                        <th>Status</th>
-                        <th style="text-align: left;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm">
-                    @forelse ($orders as $order)
-                        <tr>
-                            <td>{{ $order->id }}</td>
-                            <td>{{ $order->dealer->name ?? 'N/A' }}</td>
-                            <td>{{ $order->customer_name }}</td>
-                            <td>{{ $order->product->product_name ?? 'N/A' }}</td>
-                            <td>
-                                @if(is_array($order->production_step))
-                                    {{ implode(', ', collect($order->production_step)->map(fn($id) => $departments[$id] ?? '')->toArray()) }}
-                                @else
-                                    {{ $order->production_step }}
-                                @endif
-                            </td>
-                            <td>
-                                {{-- ✅ Display Order Steps in Progress --}}
-                                @if($order->Orderstep->count())
-                                    <ul class="list-disc pl-4">
-                                        @foreach($order->Orderstep as $step)
-                                            <li>
-                                                {{ $departments[$step->d_id] ?? 'Unknown Department' }}
-                                                @if($step->note)
-                                                    <br><small class="text-muted">Note: {{ $step->note }}</small>
-                                                @endif
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span class="text-muted">No step in progress</span>
-                                @endif
-                            </td>
-                            <td>{{ number_format($order->price, 2) }}</td>
-                            <td>{{ $order->quantity }}</td>
-                            <td>{{ $order->shade_number }}</td>
-                            <td>{{ $order->color }}</td>
-                            <td>{{ optional($order->delivery_time)->format('Y-m-d') }}</td>
-                            <td>
-                                <select class="form-select form-select-sm status-select" data-order-id="{{ $order->id }}" onchange="updateOrderStatus(this)">
-                                    <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="progress" {{ $order->status == 'progress' ? 'selected' : '' }}>Progress</option>
-                                    <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                    <option value="rework" {{ $order->status == 'rework' ? 'selected' : '' }}>Rework</option>
-                                </select>
-                            </td>
-                            <td>
-                                <div class="flex items-start mt-4 gap-2 justify-content-left">
-                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-success "><i
-                                    data-lucide="view" class="w-4 h-4"></i></a>
-                                    <a href="{{ route('orders.edit', $order->id) }}" class="btn btn-primary "><i data-lucide="edit" class="w-4 h-4"></i></a>
-                                    <form action="{{ route('orders.destroy', $order->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this order?');"
-                                        style="display: inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger "><i
-                                    data-lucide="trash" class="w-4 h-4"></i></a></button>
-                                    </form>
-
-                                </div>
-                            </td>
+        </div>
+        <!-- BEGIN: Orders Layout -->
+        <div class="intro-y col-span-12 overflow-auto">
+            <div id="scrollable-table"
+                style="max-height: calc(100vh - 200px); overflow-y: auto; border: 1px solid #ddd;" class="mt-5">
+                <table id="DataTable" class="display table table-bordered w-full">
+                    <thead style="position: sticky; top: 0; z-index: 10;">
+                        <tr class="bg-primary font-bold text-white">
+                            <th>ID</th>
+                            <th>Dealer Name</th>
+                            <th>Customer Name</th>
+                            <th>Product Name</th>
+                            <th>Production Step</th>
+                            <th>Working</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Shade Number</th>
+                            <th>Color</th>
+                            <th>Delivery Time</th>
+                            <th>Status</th>
+                            <th style="text-align: left;">Actions</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="12" class="text-center">No orders found</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="body" class="text-sm">
+                        @include('orders.rows', ['page' => 1])
+                    </tbody>
+                </table>
+            </div>
+            <div id="loading" style="display: none; text-align: center; padding: 10px;">
+                <p>Loading more...</p>
+            </div>
             <!-- END: Orders Layout -->
-
-            <div class="col-span-12 mt-4">
-                {{ $orders->links() }} {{-- Laravel pagination --}}
-            </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        let page = 1;
+        let loading = false;
+        let currentSearch = '';
+
+        const scrollContainer = document.getElementById('scrollable-table');
+        const orderData = document.getElementById('body');
+        const loadingIndicator = document.getElementById('loading');
+        const searchInput = document.getElementById('search');
+        let searchTimer;
+
+        // Search on keyup with debounce
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                currentSearch = searchInput.value.trim();
+                page = 1;
+                loadMoreData(page, false);
+            }, 300);
+        });
+
+        // Infinite scroll event
+        scrollContainer.addEventListener('scroll', function () {
+            const scrollBottom = scrollContainer.scrollTop + scrollContainer.clientHeight;
+            const scrollHeight = scrollContainer.scrollHeight;
+
+            if (scrollBottom >= scrollHeight - 100 && !loading) {
+                page++;
+                loadMoreData(page, true);
+            }
+        });
+
+        // Load data (append or replace)
+        function loadMoreData(pageToLoad, append = false) {
+            loading = true;
+            loadingIndicator.style.display = 'block';
+
+            // Build fetch URL with params: page, search
+            let url = new URL(window.location.href);
+            url.searchParams.set('page', pageToLoad);
+
+            if (currentSearch) {
+                url.searchParams.set('search', currentSearch);
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            fetch(url.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.trim().length == 0) {
+                    loadingIndicator.innerHTML = '';
+                    return;
+                }
+
+                if (append) {
+                    orderData.insertAdjacentHTML('beforeend', data);
+                } else {
+                    orderData.innerHTML = data;
+                }
+
+                loadingIndicator.style.display = 'none';
+                loading = false;
+            })
+            .catch(error => {
+                console.error("Error fetching orders:", error);
+                loadingIndicator.style.display = 'none';
+                loading = false;
+            });
+        }
+
+        function updateOrderStatus(selectElement) {
+            const orderId = selectElement.getAttribute('data-order-id');
+            const newStatus = selectElement.value;
+            const originalStatus = selectElement.getAttribute('data-original-status');
+
+            // Show loading state
+            selectElement.disabled = true;
+            const originalHtml = selectElement.innerHTML;
+            selectElement.innerHTML = '<option>Updating...</option>';
+            const url = `/orders/update-status/${orderId}`;
+
+            // Send AJAX request to update status
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    selectElement.setAttribute('data-original-status', newStatus);
+                    toastr.success('Status updated successfully');
+                } else {
+                    selectElement.value = originalStatus;
+                    toastr.error(data.message || 'Failed to update status');
+                }
+            })
+            .catch(error => {
+                // Revert to original value on error
+                selectElement.value = originalStatus;
+
+                // Show error message
+                toastr.error('Failed to update status: ' + error.message);
+            })
+            .finally(() => {
+                // Restore select element
+                selectElement.disabled = false;
+                selectElement.innerHTML = originalHtml;
+                selectElement.value = newStatus; // Maintain the selected value if update was successful
+            });
+        }
+    </script>
+@endpush
 <script>
 function updateOrderStatus(selectElement) {
     const orderId = selectElement.getAttribute('data-order-id');

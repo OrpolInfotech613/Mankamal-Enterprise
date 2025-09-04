@@ -13,16 +13,19 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
+        $perPage = 20;
+        $search = $request->input('search');
+
         $query = Employee::query();
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%');
         }
 
-        $employees = $query->paginate(15);
+        $employees = $query->paginate($perPage);
 
         if ($request->ajax()) {
-            return view( 'employees.rows', compact('employees'))->render();
+            return view('employees.rows', compact('employees'))->render();
         }
 
         return view('employees.index', compact('employees'));

@@ -10,9 +10,19 @@ class TypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $types = Type::all();
+        $query = Type::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $types = $query->orderBy('id', 'desc')->paginate(15);
+
+        if ($request->ajax()) {
+            return view('types.rows', compact('types'))->render();
+        }
         return view('types.index', compact('types'));
     }
 
